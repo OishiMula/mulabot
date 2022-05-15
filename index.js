@@ -45,5 +45,16 @@ client.on('interactionCreate', async interaction => {
 
 });
 
+/* Commands Missing:
+TODO: top10
+TODO: top10all
+TODO: toke
+TODO: shorts
+TODO: mmm
+TODO: traitfloor
+TODO: addproject
+TODO: on message content
+*/
+
 client.login(token);
 

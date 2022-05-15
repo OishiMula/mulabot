@@ -42,8 +42,8 @@ module.exports = {
 
 		const msgPayload = {
 			title : 'Last',
-			mp : 'jpg',
-			projectName : project.properName,
+			source : 'jpg',
+			header : project.properName,
 			content : saleMsg(jpgSalesData),
 			thumbnail : `${mulaFN.ipfsBase}${imgURL}`
 		}

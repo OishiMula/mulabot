@@ -16,8 +16,8 @@ module.exports = {
 
 		// Retrieve proeject name <--> PolicyID match
 		const project = await mulaFN.download(`${mulaFN.jpgPolicyLookupAPI}${projectName}&size=500`, 'project');
-
-		// TODO: TypeError: Cannot read properties of undefined (reading 'url')
+		// FIXME: Catch "if false"
+		
 		// Get CNFT Project Image
 		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policyID}`, 'thumbnail');
 
@@ -29,8 +29,8 @@ module.exports = {
 
 		const msgPayload = {
 			title : 'HYPE Floor',
-			mp : 'jpg',
-			projectName : project.properName,
+			source : 'jpg',
+			header : project.properName,
 			content : `Floor price: **₳${floorPrice}**
 			[jpg.store link](${mulaFN.jpgStoreLink}${project.name})`,
 			thumbnail : `${mulaFN.ipfsBase}${imgURL}`

@@ -7,7 +7,9 @@ const jpgCollectionAPI = 'https://server.jpgstoreapis.com/collection/';
 const jpgPolicyAPI = 'https://server.jpgstoreapis.com/policy/';
 const jpgStoreLink = 'https://www.jpg.store/collection/';
 const opencnftPolicyAPI = 'https://api.opencnft.io/1/policy/';
+const openSeaAPI ='https://api.opensea.io/api/v1/collection/';
 const ipfsBase = 'https://infura-ipfs.io/ipfs/';
+const MULA_BOT_IMG = 'https://bafybeidb6f5rr27no5ghctfbac4zktulwa4ku6rfhuardx3iwu7cvocl4q.ipfs.infura-ipfs.io/'
 
 const CREW = {
   "oishi": ["Secretly Satoshi", "Dirty $MILK whore", "I can't tell you, he's my boss", "Charles asks him for CNFT recommendations"],
@@ -70,14 +72,15 @@ module.exports = {
   jpgPolicyAPI,
   jpgStoreLink,
   opencnftPolicyAPI,
+  openSeaAPI,
   ipfsBase,
   CREW,
-  SHORTCUTS
+  SHORTCUTS,
+  MULA_BOT_IMG,
 }
 
 module.exports.download = async function(url, type) {
-  let count = 1;
-    for (;;) {
+    for (let i = 1 ; ;i += 1) {
       try {
         const response = await fetch(url);
         switch (type) {
@@ -90,18 +93,34 @@ module.exports.download = async function(url, type) {
           case 'project': {
             const respJ = await response.json();
             const project = {
-              name : respJ['collections'][0]['url'],
-              properName : respJ['collections'][0]['display_name'],
-              policyID : respJ['collections'][0]['policy_id']
+              name : respJ.collections[0].url,
+              properName : respJ.collections[0].display_name,
+              policyID : respJ.collections[0].policy_id
             };
+            return project;
+          }
+          case 'eproject': {
+            const respJ = await response.json();
+            const project = {
+              name: respJ.collection.name,
+              img: respJ.collection.image_url,
+            }
             return project;
           }
           default:
             return console.error('Error with download!');
         }
       } catch (error) {
-        count += 1;
-        count <= 5 ? console.error(`Error: ${error} -- Retrying`) : false; 
+        if (i <= 3) {
+          console.error(`Error: ${error} -- Retrying`);
+          // TODO: delay timer
+        }
+        else {
+          return false;
+        }
+        // TODO: older "neater code"
+        //i <= 5 ? console.error(`Error: ${error} -- Retrying`) : false; 
+
       }
     }
 }
@@ -109,12 +128,25 @@ module.exports.download = async function(url, type) {
 module.exports.createMsg = async function(payload) {
   const author = {
     name: 'Mula Bot - Degens Den Servant',
-    iconURL: 'https://bafybeidb6f5rr27no5ghctfbac4zktulwa4ku6rfhuardx3iwu7cvocl4q.ipfs.infura-ipfs.io/'
+    iconURL: `${MULA_BOT_IMG}`
   }
+
   let footer;
-  switch (payload.mp) {
+  switch (payload.source) {
     case 'jpg': {
       footer = { text: 'Data provided by jpg.store' };
+      break;
+    }
+    case 'opencnft': {
+      footer = { text: 'Data provided by opencnft.io'};
+      break;
+    }
+    case 'opensea': {
+      footer = { text: 'Data provided by opensea.io' };
+      break;
+    }
+    case 'museliswap': {
+      footer = { text: 'Data provided by museliswap.com'};
       break;
     }
     default:
@@ -130,7 +162,7 @@ module.exports.createMsg = async function(payload) {
     .setColor(color)
     .setAuthor(author)
     .setFooter(footer)
-    .addField(payload.projectName, payload.content);
+    .addField(payload.header, payload.content);
 
   return newMessage;
 }
