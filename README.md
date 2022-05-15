@@ -1,2 +1,1 @@
-# js-mula-bot
-discordjs rewrite
+# Mula bot v2.0
