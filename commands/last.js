@@ -7,7 +7,7 @@ dayjs.extend(relativeTime);
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('tlast')
+		.setName('last')
 		.setDescription('Retrieve the last # sales made')
 		.addStringOption(option => option.setName('project').setDescription('Enter a project name').setRequired(true))
 		.addIntegerOption(option => option.setName('amount').setDescription('Retrieve the last # sales made').setMinValue(1).setMaxValue(20)),
@@ -22,19 +22,23 @@ module.exports = {
 		amount > 0 ? {} : amount = 5;
 
 		// Retrieve proeject name <--> PolicyID match
-		const project = await mulaFN.download(`${mulaFN.jpgPolicyLookupAPI}${projectName}&size=500`, 'project');
-
+		const project = await mulaFN.download(projectName, 'project')
+		if (project === "error") {
+			console.error(`ERROR: Command: Floor - ${projectName}`);
+			return await interaction.reply(`I couldn't find ${projectName} -- Typo maybe? Dum dum.`);
+		}
+		
 		// Get CNFT Project Image
-		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policyID}`, 'thumbnail');
+		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
 		
 		// Retrieve recent sales
-		const jpgSalesJ = await mulaFN.download(`${mulaFN.jpgPolicyAPI}${project.policyID}/sales?page=1`, 'data');
+		const jpgSalesJ = await mulaFN.download(`${mulaFN.jpgPolicyAPI}${project.policy_id}/sales?page=1`, 'data');
 		const jpgSalesData = jpgSalesJ.slice(0,amount);
 
 		// Preparing the message content
 		function saleMsg(sale) {
 			let msg = ''
-			for (let i = 0; i < sale.length; i++) {
+			for (let i = 0; i < sale.length; i += 1) {
 				msg += `**${ordinal(i + 1)}** ${sale[i].display_name} | Price: ₳**${Number(sale[i].price_lovelace / 1000000)}** - Purchased: **${dayjs(sale[i].confirmed_at).fromNow()}**\n`
 			}
 			return msg;
@@ -43,12 +47,13 @@ module.exports = {
 		const msgPayload = {
 			title : 'Last',
 			source : 'jpg',
-			header : project.properName,
+			header : project.display_name,
 			content : saleMsg(jpgSalesData),
 			thumbnail : `${mulaFN.ipfsBase}${imgURL}`
 		}
 
 		const embed = await mulaFN.createMsg(msgPayload);
+		console.log(`Command: Last - ${project.display_name} - ${amount}`)
 		await interaction.reply({ embeds: [ embed ] });
 	},
 };

@@ -2,7 +2,7 @@ require('dotenv').config();
 const fs = require('node:fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const token = process.env.MULATEST_TOKEN;
+const token = process.env.MULA_TOKEN;
 const guildId = process.env.GID_TOKEN;
 const clientId = process.env.CLIENT_ID;
 

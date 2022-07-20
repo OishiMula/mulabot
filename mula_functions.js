@@ -1,5 +1,6 @@
 const fetch = require('cross-fetch');
 const { MessageEmbed } = require('discord.js');
+//const Fuse = require('fuse.js')
 
 // API Endpoints
 const jpgPolicyLookupAPI = 'https://server.jpgstoreapis.com/search/collections?verified=should-be-verified&nameQuery=';
@@ -40,30 +41,41 @@ const CREW = {
 
 const SHORTCUTS = {
   "arc": "apeing riot club",
-  "bcrc": "boss cat rocket club",
-  "brightleaf": "brightleaf laboratories",
-  "carda": "carda station land",
-  "ck": "chilled kongs",
-  "clays": "clay nation",
-  "clumsy": "clumsy ghosts",
-  "corn": "cornucopias bubblejett sprinter 2022",
+  "bad fox": "badfoxmotorcycleclub-foxcollection",
+  "bc": "beyond citizens",
+  "bcrc": "bosscatrocketclub",
+  "carda": "cardastationland",
+  "ck": "chilledkongs",
+  "clay": "clay nation",
+  "clumsy": "clumsyghosts",
+  "cornbubble": "cornucopias-bubblejett-sprinter2022",
+  "cornjave": "cornucopiasgtijavelin2022",
   "cwar": "cardano warriors",
-  "dcc": "degen crypto club",
-  "drrs": "dead rabbit resurrection society",
-  "drapes": "derp apes",
+  "dcc": "degencryptoclub",
+  "drrs": "deadrabbitresurrectionsociety",
+  "drapes": "derpapes",
   "gcclays": "clay nation x good charlotte",
-  "havoc": "havoc worlds",
+  "havoc": "havocworlds",
+  "htc": "happytigersclub",
   "hw": "havoc worlds",
-  "knfty": "knfty world knfty creatures",
-  "mdcc" : "mad dog car club",
-  "mek" : "Mekanism",
-  "pom": "petbot",
+  "knfty": "knftyworldknftycreatures",
+  "mmb" : "meltingmoonboy",
+  "mdcc" : "maddogcarclub",
+  "mek" : "mekanism",
   "pxlz": "deadpxlz",
   "soho": "soho kids",
-  "ue": "unbounde dearth",
   "unsigs": "unsigned_algorithms",
-  "ubuc" : "ugly boys x ugly community",
-  "yetis": "smooth yeti mountain club",
+  "vox kongs" : "boss planet vox kongs",
+  "tangz" : "wild tangz",
+  "yetis" : "smooth yeti mountain club",
+}
+
+const SHORTCUTS_ETH = {
+  "bayc": "boredapeyachtclub",
+  "buttheads": "buttheads-real",
+  "degentoonz": "degentoonz-collection",
+  "lemons": "little-lemon-friends",
+  "soulz" : "soulz-monogatari7777",
 }
 
 module.exports = {
@@ -76,30 +88,79 @@ module.exports = {
   ipfsBase,
   CREW,
   SHORTCUTS,
+  SHORTCUTS_ETH,
   MULA_BOT_IMG,
 }
 
-module.exports.download = async function(url, type) {
-    for (let i = 1 ; ;i += 1) {
+module.exports.download = async function(data, type) {
       try {
-        const response = await fetch(url);
+        let response;
+        
         switch (type) {
           case 'data':
+            response = await fetch(data);
             return await response.json();
           case 'thumbnail': {
+            response = await fetch(data);
             const imgJ = await response.json();
             return imgJ.thumbnail.slice(7);
           }
           case 'project': {
-            const respJ = await response.json();
-            const project = {
-              name : respJ.collections[0].url,
-              properName : respJ.collections[0].display_name,
-              policyID : respJ.collections[0].policy_id
+            let jpgPolicy = 'https://server.jpgstoreapis.com/policy/verified?page=';
+
+            // Set up Fuse options to search jpg.store
+            /*const options = {
+              keys: ['url', 'display_name', 'policy_id'],
+              threshold: 0.1,
+              distance: 0,
+              ignoreLocation: true,
             };
-            return project;
+            */
+
+            let match, jpgPage, jpgResponse, jpgData; //, fuse, result;
+  
+            for (let num = 1; ; num += 1) {
+              jpgPage = `${jpgPolicy}${num}`;
+              jpgResponse = await fetch(jpgPage);
+              jpgData = await jpgResponse.json();
+            /*
+            if (jpgData.length > 0) {
+              fuse = new Fuse(jpgData, options);
+              result = fuse.search(data);
+              if (result.length === 0) {
+                continue;
+              }
+              else{
+                return(result)
+              }
+            }
+            else {
+              break;
+            }
+              //console.log(result)*/
+              if (jpgData.length > 0) {
+                if (jpgData.find(project => project.url === data)) {
+                  match = jpgData.find(project => project.url === data);
+                  return match;
+                }
+                if (jpgData.find(project => project.display_name.toLowerCase() === data)) {
+                  match = jpgData.find(project => project.display_name.toLowerCase() === data);
+                  return match;
+                }
+                continue
+              }
+            
+              else {
+                break;
+              }   
+               
+            }
+
+           return "error";
           }
+
           case 'eproject': {
+            response = await fetch(data);
             const respJ = await response.json();
             const project = {
               name: respJ.collection.name,
@@ -111,19 +172,9 @@ module.exports.download = async function(url, type) {
             return console.error('Error with download!');
         }
       } catch (error) {
-        if (i <= 3) {
-          console.error(`Error: ${error} -- Retrying`);
-          // TODO: delay timer
-        }
-        else {
-          return false;
-        }
-        // TODO: older "neater code"
-        //i <= 5 ? console.error(`Error: ${error} -- Retrying`) : false; 
-
+        return "error";
       }
     }
-}
 
 module.exports.createMsg = async function(payload) {
   const author = {

@@ -3,7 +3,7 @@ const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('tfloor')
+		.setName('floor')
 		.setDescription('Retrieve the floor price')
 		.addStringOption(option => option.setName('project').setDescription('Enter a project name').setRequired(true)),
 	async execute(interaction) {
@@ -12,7 +12,7 @@ module.exports = {
 
 		// crew check - fun sayings
 		if (projectName in mulaFN.CREW) {
-			return await interaction.reply(`${projectName.toProperCase()} - ${mulaFN.choose(mulaFN.CREW[projectName])}`)
+			return await interaction.reply(`${projectName} - ${mulaFN.choose(mulaFN.CREW[projectName])}`)
 		}
 
 		// shortcut check
@@ -20,47 +20,36 @@ module.exports = {
 			projectName = mulaFN.SHORTCUTS[projectName];
 		}
 
-		// Retrieve project name <--> PolicyID match
-		let project = await mulaFN.download(`${mulaFN.jpgPolicyLookupAPI}${projectName}&size=500`, 'project');
-		// FIXME: Catch "if false", but check if Eth
-		if (!project) {
-			project = await mulaFN.download(`${mulaFN.openSeaAPI}${projectName}`, 'eproject');
-			if (!project) {
-				// TODO: Error code
-				return;
-			}
-			else {
-				// Retrieve the Eth project data
-				const projectData = await mulaFN.download(`${mulaFN.openSeaAPI}${projectName}/stats`, 'data');
-				const floorPrice = projectData.stats.floor_price;
-				msgPayload = {
-					title : 'Floor',
-					source : 'opensea',
-					header : project.name,
-					content : `Floor Price: **Ξ${floorPrice}**`,
-					thumbnail : project.img
-				}
-			}
+		let project = await mulaFN.download(projectName, 'project');
+		if (project === "error") {
+			console.error(`ERROR: Command: Floor - ${projectName}`);
+			return await interaction.reply(`I couldn't find ${projectName} -- Typo maybe? Dum dum.`);
+		}
+		
+
+		// Get CNFT Project Image
+		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
+
+		// Retrieve floor
+		const jpgFloorJ = await mulaFN.download(`${mulaFN.jpgCollectionAPI}${project.policy_id}/floor`, 'data');
+		const floorPrice = String(jpgFloorJ.floor / 1000000);
+
+		msgPayload = {
+			title : 'Floor',
+			source : 'jpg',
+			header : project.display_name,
+			content : `Floor price: **₳${floorPrice}**
+			[jpg.store link](${mulaFN.jpgStoreLink}${project.url})`,
+			thumbnail : `${mulaFN.ipfsBase}${imgURL}`
 		}
 
-		else {
-			// Get CNFT Project Image
-			const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policyID}`, 'thumbnail');
+	const embed = await mulaFN.createMsg(msgPayload);
+	console.log(`Command: Floor - ${project.display_name}`)
+	await interaction.reply({ embeds: [ embed ] });
 
-			// Retrieve floor
-			const jpgFloorJ = await mulaFN.download (`${mulaFN.jpgCollectionAPI}${project.policyID}/floor`, 'data');
-			const floorPrice = String(jpgFloorJ.floor / 1000000);
+		
 
-			msgPayload = {
-				title : 'Floor',
-				source : 'jpg',
-				header : project.properName,
-				content : `Floor price: **₳${floorPrice}**
-				[jpg.store link](${mulaFN.jpgStoreLink}${project.name})`,
-				thumbnail : `${mulaFN.ipfsBase}${imgURL}`
-			}
-		}
-		const embed = await mulaFN.createMsg(msgPayload);
-		await interaction.reply({ embeds: [ embed ] });
+
+
 	},
 };
