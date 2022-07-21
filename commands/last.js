@@ -53,7 +53,7 @@ module.exports = {
 		}
 
 		const embed = await mulaFN.createMsg(msgPayload);
-		console.log(`Command: Last - ${project.display_name} - ${amount}`)
+		console.log(`Command: Last - ${project.display_name} - Amount:${amount}`)
 		await interaction.reply({ embeds: [ embed ] });
 	},
 };

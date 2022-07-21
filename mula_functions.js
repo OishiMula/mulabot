@@ -146,8 +146,8 @@ module.exports.download = async function(data, type) {
             }
               //console.log(result)*/
               if (jpgData.length > 0) {
-                if (jpgData.find(project => project.url === data)) {
-                  match = jpgData.find(project => project.url === data);
+                if (jpgData.find(project => project.url.toLowerCase()  === data)) {
+                  match = jpgData.find(project => project.url.toLowerCase()  === data);
                   return match;
                 }
                 if (jpgData.find(project => project.display_name.toLowerCase() === data)) {

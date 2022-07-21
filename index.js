@@ -7,6 +7,7 @@ pm2 start index.js --name MulaBot --log-date-format "MM-DD | hh:mm:ss a"
 // Add required libs
 require('dotenv').config();
 const fs = require('node:fs');
+const path = require('path');
 const token = process.env.MULA_TOKEN;
 const randomFile = require('select-random-file') 
 const extrasPath = '/home/pi/projects/js/mula_bot/extras/'
