@@ -1,6 +1,6 @@
 {
   "name": "mula_bot",
-  "version": "0.3",
+  "version": "0.4",
   "description": "Mula Bot - For Discord!",
   "main": "index.js",
   "scripts": {
@@ -9,10 +9,11 @@
   "author": "Oishi Mula",
   "license": "ISC",
   "dependencies": {
+    "@blockfrost/blockfrost-js": "^4.2.0",
     "@discordjs/builders": "^0.13.0",
     "@discordjs/rest": "^0.4.1",
     "cross-fetch": "^3.1.5",
-    "dayjs": "^1.11.1",
+    "dayjs": "^1.11.4",
     "discord-api-types": "^0.32.0",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",

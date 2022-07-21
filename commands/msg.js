@@ -7,7 +7,13 @@ module.exports = {
 		.addStringOption(option => option.setName('saying').setDescription('Whatcha want me to say?').setRequired(true)),
 	async execute(interaction) {
     const message = interaction.options.getString('saying');
-    await interaction.reply({ content: `Sending message.`, ephemeral: true });
-		interaction.channel.send(message);
+		if (interaction.user.id === '374929603594027018') {
+			await interaction.reply({ content: `Sending message.`, ephemeral: true });
+			interaction.channel.send(message);
+		}
+		else {
+			console.log(`Command: Msg - ${message.author.tag}`)
+			await interaction.reply({ content: `You ain't oishi, shoo.`, ephemeral: true });
+		}
   }
 }

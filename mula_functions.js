@@ -1,5 +1,8 @@
+require('dotenv').config();
+const fs = require('fs');
 const fetch = require('cross-fetch');
 const { MessageEmbed } = require('discord.js');
+const Blockfrost = require('@blockfrost/blockfrost-js');
 //const Fuse = require('fuse.js')
 
 // API Endpoints
@@ -10,7 +13,11 @@ const jpgStoreLink = 'https://www.jpg.store/collection/';
 const opencnftPolicyAPI = 'https://api.opencnft.io/1/policy/';
 const openSeaAPI ='https://api.opensea.io/api/v1/collection/';
 const ipfsBase = 'https://infura-ipfs.io/ipfs/';
-const MULA_BOT_IMG = 'https://bafybeidb6f5rr27no5ghctfbac4zktulwa4ku6rfhuardx3iwu7cvocl4q.ipfs.infura-ipfs.io/'
+const MULA_BOT_IMG = 'https://bafybeidb6f5rr27no5ghctfbac4zktulwa4ku6rfhuardx3iwu7cvocl4q.ipfs.infura-ipfs.io/';
+
+const API = new Blockfrost.BlockFrostAPI({
+  projectId: `${process.env.BLOCKFROST_TOKEN}`
+});
 
 const CREW = {
   "oishi": ["Secretly Satoshi", "Dirty $MILK whore", "I can't tell you, he's my boss", "Charles asks him for CNFT recommendations"],
@@ -168,10 +175,27 @@ module.exports.download = async function(data, type) {
             }
             return project;
           }
+
+          case 'epoch': {
+            const latestEpoch = await API.epochsLatest();
+            const epoch = {
+              current : latestEpoch.epoch,
+              end : latestEpoch.end_time
+            }
+            return epoch;
+          }
+
+          case 'local': {
+            response = fs.readFileSync(data, 'utf8');
+            const fileData = JSON.parse(response);
+            return fileData;
+          }
+
           default:
             return console.error('Error with download!');
         }
       } catch (error) {
+        console.error(error)
         return "error";
       }
     }
