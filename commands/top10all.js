@@ -28,8 +28,7 @@ module.exports = {
     }
 
     const embed = await mulaFN.createMsg(msgPayload);
-    console.log(`Command: Top 10 All`)
-    await interaction.reply({ embeds: [ embed ] });
 
+    await interaction.reply({ embeds: [ embed ] });
   }
 }

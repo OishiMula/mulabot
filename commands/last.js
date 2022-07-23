@@ -23,10 +23,7 @@ module.exports = {
 
 		// Retrieve proeject name <--> PolicyID match
 		const project = await mulaFN.download(projectName, 'project')
-		if (project === "error") {
-			console.error(`ERROR: Command: Floor - ${projectName}`);
-			return await interaction.reply(`I couldn't find ${projectName} -- Typo maybe? Dum dum.`);
-		}
+		if (project === "error") return ['error', projectName];
 		
 		// Get CNFT Project Image
 		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
@@ -36,6 +33,7 @@ module.exports = {
 		const jpgSalesData = jpgSalesJ.slice(0,amount);
 
 		// Preparing the message content
+		// TODO: More than 10
 		function saleMsg(sale) {
 			let msg = ''
 			for (let i = 0; i < sale.length; i += 1) {
@@ -53,7 +51,8 @@ module.exports = {
 		}
 
 		const embed = await mulaFN.createMsg(msgPayload);
-		console.log(`Command: Last - ${project.display_name} - Amount:${amount}`)
+
 		await interaction.reply({ embeds: [ embed ] });
+		return project.display_name;
 	},
 };

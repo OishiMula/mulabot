@@ -3,7 +3,7 @@ const fs = require('fs');
 const fetch = require('cross-fetch');
 const { MessageEmbed } = require('discord.js');
 const Blockfrost = require('@blockfrost/blockfrost-js');
-//const Fuse = require('fuse.js')
+const Fuse = require('fuse.js');
 
 // API Endpoints
 const jpgPolicyLookupAPI = 'https://server.jpgstoreapis.com/search/collections?verified=should-be-verified&nameQuery=';
@@ -14,6 +14,7 @@ const opencnftPolicyAPI = 'https://api.opencnft.io/1/policy/';
 const openSeaAPI ='https://api.opensea.io/api/v1/collection/';
 const ipfsBase = 'https://infura-ipfs.io/ipfs/';
 const MULA_BOT_IMG = 'https://bafybeidb6f5rr27no5ghctfbac4zktulwa4ku6rfhuardx3iwu7cvocl4q.ipfs.infura-ipfs.io/';
+const jpgStoreLogo = 'QmbbfCQQBuVcWkX7hJ23LVNgoXRQi4mAVzT92mmcwBvqFF';
 
 const API = new Blockfrost.BlockFrostAPI({
   projectId: `${process.env.BLOCKFROST_TOKEN}`
@@ -85,6 +86,21 @@ const SHORTCUTS_ETH = {
   "soulz" : "soulz-monogatari7777",
 }
 
+const ERROR_SAYINGS = [
+  "Typo maybe? Dum dum", 
+  "Common L for you", 
+  "Failing like Solana", 
+  "Try again I guess", 
+  "you fucking up", 
+  "shit's lost like Linguini", 
+  "sry come again", 
+  "nope no dice", 
+  "nah but in other news, Oishi is dope.",
+  "NOPE.",
+  "so sorry oh well",
+  "and i don't care",
+]
+
 module.exports = {
   jpgPolicyLookupAPI,
   jpgCollectionAPI,
@@ -97,108 +113,94 @@ module.exports = {
   SHORTCUTS,
   SHORTCUTS_ETH,
   MULA_BOT_IMG,
+  ERROR_SAYINGS,
 }
 
 module.exports.download = async function(data, type) {
-      try {
-        let response;
-        
-        switch (type) {
-          case 'data':
-            response = await fetch(data);
-            return await response.json();
-          case 'thumbnail': {
-            response = await fetch(data);
-            const imgJ = await response.json();
-            return imgJ.thumbnail.slice(7);
-          }
-          case 'project': {
-            let jpgPolicy = 'https://server.jpgstoreapis.com/policy/verified?page=';
-
-            // Set up Fuse options to search jpg.store
-            /*const options = {
-              keys: ['url', 'display_name', 'policy_id'],
-              threshold: 0.1,
-              distance: 0,
-              ignoreLocation: true,
-            };
-            */
-
-            let match, jpgPage, jpgResponse, jpgData; //, fuse, result;
+  let response;
   
-            for (let num = 1; ; num += 1) {
-              jpgPage = `${jpgPolicy}${num}`;
-              jpgResponse = await fetch(jpgPage);
-              jpgData = await jpgResponse.json();
-            /*
-            if (jpgData.length > 0) {
-              fuse = new Fuse(jpgData, options);
-              result = fuse.search(data);
-              if (result.length === 0) {
-                continue;
-              }
-              else{
-                return(result)
-              }
-            }
-            else {
-              break;
-            }
-              //console.log(result)*/
-              if (jpgData.length > 0) {
-                if (jpgData.find(project => project.url.toLowerCase()  === data)) {
-                  match = jpgData.find(project => project.url.toLowerCase()  === data);
-                  return match;
-                }
-                if (jpgData.find(project => project.display_name.toLowerCase() === data)) {
-                  match = jpgData.find(project => project.display_name.toLowerCase() === data);
-                  return match;
-                }
-                continue
-              }
-            
-              else {
-                break;
-              }   
-               
-            }
+  switch (type) {
+    case 'data':
+      response = await fetch(data);
+      return await response.json();
 
-           return "error";
-          }
-
-          case 'eproject': {
-            response = await fetch(data);
-            const respJ = await response.json();
-            const project = {
-              name: respJ.collection.name,
-              img: respJ.collection.image_url,
-            }
-            return project;
-          }
-
-          case 'epoch': {
-            const latestEpoch = await API.epochsLatest();
-            const epoch = {
-              current : latestEpoch.epoch,
-              end : latestEpoch.end_time
-            }
-            return epoch;
-          }
-
-          case 'local': {
-            response = fs.readFileSync(data, 'utf8');
-            const fileData = JSON.parse(response);
-            return fileData;
-          }
-
-          default:
-            return console.error('Error with download!');
-        }
-      } catch (error) {
-        console.error(error)
-        return "error";
-      }
+    case 'thumbnail': {
+      response = await fetch(data);
+      let imgJ = await response.json();
+      if (typeof(imgJ.thumbnail) !== 'string') return jpgStoreLogo;
+      return imgJ.thumbnail.slice(7);
     }
+
+    case 'project': {
+      let jpgPolicy = 'https://server.jpgstoreapis.com/policy/verified?page=';
+      // Set up Fuse options to search jpg.store
+      const options = {
+        keys: ['url', 'display_name', 'policy_id'],
+        threshold: 0.3,
+        //ignoreLocation: true,
+        includeScore: true,
+        findAllMatches: true,
+        shouldSort: true,
+        useExtendedSearch: true
+      };
+      
+      let jpgPage, jpgResponse, jpgData, exactMatch, fuse;
+      let result = [];
+      let blacklistWords = ["Exclusives"];
+
+      for (let num = 1; ; num += 1) {
+        jpgPage = `${jpgPolicy}${num}`;
+        jpgResponse = await fetch(jpgPage);
+        jpgData = await jpgResponse.json();
+        exactMatch = result.find(exact => exact.score === 0)
+      
+      if (jpgData.length > 0) {
+        fuse = new Fuse(jpgData, options);
+        result.push(fuse.search(`${data} !${blacklistWords}`));
+        
+        if (result.length === 0) continue;
+        else {
+          result = result.flat();
+          for (let exact in result) if (result[exact].score.toString().includes('e') || result[exact].score < 0.0002) result[exact].score = 0; 
+          continue;
+        }
+      }
+      else {
+        if (result.length === 0) return "error";
+        if (exactMatch) return exactMatch.item;
+        return(result[0].item);
+      }
+    }}
+
+    case 'eproject': {
+      response = await fetch(data);
+      const respJ = await response.json();
+      const project = {
+        name: respJ.collection.name,
+        img: respJ.collection.image_url,
+      }
+      return project;
+    }
+
+    case 'epoch': {
+      const latestEpoch = await API.epochsLatest();
+      const epoch = {
+        current : latestEpoch.epoch,
+        end : latestEpoch.end_time
+      }
+      return epoch;
+    }
+
+    case 'local': {
+      response = fs.readFileSync(data, 'utf8');
+      const fileData = JSON.parse(response);
+      return fileData;
+    }
+
+    default:
+      return console.error('Error with download!');
+  }
+}
 
 module.exports.createMsg = async function(payload) {
   const author = {

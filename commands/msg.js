@@ -12,8 +12,8 @@ module.exports = {
 			interaction.channel.send(message);
 		}
 		else {
-			console.log(`Command: Msg - ${message.author.tag}`)
 			await interaction.reply({ content: `You ain't oishi, shoo.`, ephemeral: true });
 		}
+		return message;
   }
 }

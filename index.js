@@ -7,8 +7,8 @@ pm2 start index.js --name MulaBot --log-date-format "MM-DD | hh:mm:ss a"
 // Add required libs
 require('dotenv').config();
 const fs = require('node:fs');
-const path = require('path');
 const token = process.env.MULA_TOKEN;
+const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
 const randomFile = require('select-random-file') 
 const extrasPath = '/home/pi/projects/js/mula_bot/extras/'
 const epochFile = '/home/pi/projects/js/mula_bot/extras/epoch.txt'
@@ -40,6 +40,7 @@ async function writeFile(data, file) {
 
 client.once('ready', async () => {
   console.log("Mula Bot Starting");
+	
 	// Epoch Countdown loop
 	const checkMinutes = 0.1, checkInterval = checkMinutes * 60 * 1000;
 	setInterval(async () => {
@@ -73,11 +74,18 @@ client.on('interactionCreate', async interaction => {
 
 	if (!command) return;
 
+	const t0 = performance.now();
+	let userInput = await command.execute(interaction);
+
 	try {
-		await command.execute(interaction);
+		if (userInput[0] === undefined) userInput = 'n/a';
+		if (userInput[0] === 'error') throw 'error'
+		const t1 = performance.now();
+		console.log(`Command: ${interaction.commandName} - ${userInput} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`)
 	} catch (error) {
-		console.error(error);
-		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		const t1 = performance.now();
+		await interaction.reply(`I couldn't find ${userInput[1]} -- ${mulaFN.choose(mulaFN.ERROR_SAYINGS)}`);
+		console.error(`ERROR: Command: ${interaction.commandName} - ${userInput[1]} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`);
 	}
 });
 
@@ -86,7 +94,7 @@ client.on('messageCreate',async (message) => {
 
 	// Plxce Beats
 	if (message.content.toLowerCase() === "drop the beat") {
-		console.log(`Drop the beat Triggered -- ${message.author.tag}`)
+		console.log(`Command: Drop the beat -- ${message.author.tag}`)
 		await message.channel.send({
 			files: [{
 				attachment: `${extrasPath}herewego.gif`,
@@ -101,7 +109,7 @@ client.on('messageCreate',async (message) => {
 
 	// Sheesh
 	if (message.content.toLowerCase().split(" ").includes('sheesh')) {
-		console.log(`Sheesh Triggered -- ${message.author.tag}`)
+		console.log(`Command: Sheesh -- ${message.author.tag}`)
 		await message.channel.send({
 			files: [{
 				attachment: `${extrasPath}sheesh.mp3`,
@@ -112,7 +120,7 @@ client.on('messageCreate',async (message) => {
 
 	// bitconnect
 	if (message.content.toLowerCase().split(" ").includes('bitconnect')) {
-		console.log(`Bitconnect Triggered -- ${message.author.tag}`)
+		console.log(`Command: Bitconnect -- ${message.author.tag}`)
 		await message.channel.send({
 			content: "Did someone say.. bitconnect?",
 			files: [{
@@ -124,7 +132,7 @@ client.on('messageCreate',async (message) => {
 
 	// real kong shit
 	if (message.content.toLowerCase().includes('real kong shit')) {
-		console.log(`Real kong shit Triggered -- ${message.author.tag}`)
+		console.log(`Command: Real kong shit -- ${message.author.tag}`)
 		await message.channel.send({
 			files: [{
 				attachment: `${extrasPath}realkongshit.mp4`,
@@ -135,7 +143,7 @@ client.on('messageCreate',async (message) => {
 
 	// Puta
 	if (message.content.toLowerCase().split(" ").includes('puta')) {
-		console.log(`Puta Triggered -- ${message.author.tag}`)
+		console.log(`Command: Puta -- ${message.author.tag}`)
 		await message.channel.send({
 			files: [{
 				attachment: `${extrasPath}puta.gif`,
@@ -146,7 +154,7 @@ client.on('messageCreate',async (message) => {
 
 	// Jimmy 
 	if (message.content.toLowerCase().split(" ").includes('jimmy')) {
-		console.log(`Jimmy Triggered -- ${message.author.tag}`)
+		console.log(`Command: Jimmy -- ${message.author.tag}`)
 		const jimmyDir = `${extrasPath}/jimmy`
 		randomFile(jimmyDir, (Err, jimmyGif) => {
 			message.channel.send({
@@ -160,7 +168,7 @@ client.on('messageCreate',async (message) => {
 
 	// Degen 
 	if (message.content.toLowerCase().split(" ").includes('degen')) {
-		console.log(`Degen Triggered -- ${message.author.tag}`)
+		console.log(`Command: Degen -- ${message.author.tag}`)
 		const degenDir = `${extrasPath}/degen`
 		randomFile(degenDir, (Err, degenGif) => {
 			message.channel.send({
@@ -174,7 +182,7 @@ client.on('messageCreate',async (message) => {
 
 	// Cardano
 	if (message.content.toLowerCase().split(" ").includes('cardano')) {
-		console.log(`Cardano Triggered -- ${message.author.tag}`)
+		console.log(`Command: Cardano -- ${message.author.tag}`)
 		const cardanoDir = `${extrasPath}/cardano`
 		randomFile(cardanoDir, (Err, cardanoGif) => {
 			message.channel.send({
@@ -188,7 +196,7 @@ client.on('messageCreate',async (message) => {
 
 	// Crypto / Bear
 	if (message.content.toLowerCase().split(" ").includes('bear') || message.content.toLowerCase().split(" ").includes('crypto')) {
-		console.log(`Crypto/Bear Triggered -- ${message.author.tag}`)
+		console.log(`Command: Crypto/Bear -- ${message.author.tag}`)
 		const cryptoDir = `${extrasPath}/crypto`
 		randomFile(cryptoDir, (Err, cryptoGif) => {
 			message.channel.send({
@@ -201,8 +209,10 @@ client.on('messageCreate',async (message) => {
 	}
 
 	// RIP
-	if (message.content.toLowerCase().split(" ").includes('rip') || message.content.toLowerCase().split(" ").includes('gingers')) {
-		console.log(`Rip/Gingers Triggered -- ${message.author.tag}`)
+	if (message.content.toLowerCase().split(" ").includes('rip') || 
+	message.content.toLowerCase().split(" ").includes('gingers') || 
+	message.content.toLowerCase().split(" ").includes('ginger')) {
+		console.log(`Command: Rip/Gingers -- ${message.author.tag}`)
 		const ripDir = `${extrasPath}/rip`
 		randomFile(ripDir, (Err, ripGif) => {
 			message.channel.send({
@@ -216,7 +226,7 @@ client.on('messageCreate',async (message) => {
 
 	// Solana Summer
 	if (message.content.toLowerCase().split(" ").includes('solana')) {
-		console.log(`Solana Triggered -- ${message.author.tag}`)
+		console.log(`Command: Solana -- ${message.author.tag}`)
 		const solanaDir = `${extrasPath}/solana`
 		randomFile(solanaDir, (Err, solanaGif) => {
 			message.channel.send({
@@ -230,7 +240,7 @@ client.on('messageCreate',async (message) => {
 
 	// Shillington
 	if (message.content.toLowerCase().split(" ").includes('shillington') || message.content.toLowerCase().split(" ").includes('ups')) {
-		console.log(`Shillington/UPS Triggered -- ${message.author.tag}`)
+		console.log(`Command: Shillington/UPS -- ${message.author.tag}`)
 		const upsDir = `${extrasPath}/ups`
 		randomFile(upsDir, (Err, upsGif) => {
 			message.channel.send({
@@ -244,7 +254,7 @@ client.on('messageCreate',async (message) => {
 		
 	// here we go
 	if (message.content.toLowerCase().includes("here we go")) {
-		console.log(`Here we go Triggered -- ${message.author.tag}`)
+		console.log(`Command: Here we go -- ${message.author.tag}`)
 		const herewegoDir = `${extrasPath}/herewego`
 		randomFile(herewegoDir, (Err, herewegoGif) => {
 			message.channel.send({
@@ -258,7 +268,7 @@ client.on('messageCreate',async (message) => {
 
 	// mini messi
 	if (message.content.toLowerCase().split(" ").includes("mini messi") || message.content.toLowerCase().split(" ").includes('messi')) {
-		console.log(`Messi Triggered -- ${message.author.tag}`)
+		console.log(`Command: Messi -- ${message.author.tag}`)
 		const minimessiDir = `${extrasPath}/messi`
 		randomFile(minimessiDir, (Err, minimessiGif) => {
 			message.channel.send({

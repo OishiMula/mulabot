@@ -16,11 +16,7 @@ module.exports = {
 
 		// Retrieve proeject name <--> PolicyID match
 		const project = await mulaFN.download(projectName, 'project');
-		if (project === "error") {
-			console.error(`ERROR: Command: Floor - ${projectName}`);
-			return await interaction.reply(`I couldn't find ${projectName} -- Typo maybe? Dum dum.`);
-		}
-		// FIXME: Catch "if false"
+		if (project === "error") return ['error', projectName];
 		
 		// Get CNFT Project Image
 		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
@@ -40,7 +36,8 @@ module.exports = {
 			thumbnail : `${mulaFN.ipfsBase}${imgURL}`
 		}
 		const embed = await mulaFN.createMsg(msgPayload);
-		console.log(`Command: HypeFloor - ${project.display_name}`)
+
 		await interaction.reply({ embeds: [ embed ] });
+		return project.display_name;
 	},
 };

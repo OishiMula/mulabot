@@ -6,7 +6,6 @@ module.exports = {
     .setDescription('Just vibe'),
 
 async execute(interaction) {
-  console.log(`Command: Vibe`)
     await interaction.reply('Just be polite and life\'s good.');
   }
 }

@@ -17,16 +17,13 @@ module.exports = {
 
     // retrieve data
     const project = await mulaFN.download(projectName, 'project');
-    if (project === "error") {
-			console.error(`ERROR: Command: Floor - ${projectName}`);
-			return await interaction.reply(`I couldn't find ${projectName} -- Typo maybe? Dum dum.`);
-		}
-    const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policyID}`, 'thumbnail');
-    const openCNFTData = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policyID}/transactions?order=price`, 'data');
+		if (project === "error") return ['error', projectName];
+  
+    const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
+    const openCNFTData = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}/transactions?order=price`, 'data');
     const projectATHSales = openCNFTData['items'].slice(0,10);
     
     // format data for message
-    // TODO move to MulaFunctions ?
     function saleMsg(sale) {
       let msg = ''
       for (let i = 0; i < sale.length; i += 1) {
@@ -44,7 +41,8 @@ module.exports = {
     }
 
     const embed = await mulaFN.createMsg(msgPayload);
-    console.log(`Command: Top 10 - ${project.display_name}`)
+
     await interaction.reply({ embeds: [ embed ] });
+    return project.display_name;
   }
 }

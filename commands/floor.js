@@ -12,6 +12,7 @@ module.exports = {
 
 		// crew check - fun sayings
 		if (projectName in mulaFN.CREW) {
+			console.log(`Command: Floor | Crew - ${projectName} -- ${interaction.user.tag}`)
 			return await interaction.reply(`${projectName} - ${mulaFN.choose(mulaFN.CREW[projectName])}`)
 		}
 
@@ -20,13 +21,9 @@ module.exports = {
 			projectName = mulaFN.SHORTCUTS[projectName];
 		}
 
-		let project = await mulaFN.download(projectName, 'project');
-		if (project === "error") {
-			console.error(`ERROR: Command: Floor - ${projectName}`);
-			return await interaction.reply(`I couldn't find ${projectName} -- Typo maybe? Dum dum.`);
-		}
+		const project = await mulaFN.download(projectName, 'project');
+		if (project === "error") return ['error', projectName];
 		
-
 		// Get CNFT Project Image
 		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
 
@@ -44,12 +41,8 @@ module.exports = {
 		}
 
 	const embed = await mulaFN.createMsg(msgPayload);
-	console.log(`Command: Floor - ${project.display_name}`)
+	
 	await interaction.reply({ embeds: [ embed ] });
-
-		
-
-
-
+	return project.display_name;
 	},
 };
