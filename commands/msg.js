@@ -11,9 +11,7 @@ module.exports = {
 			await interaction.reply({ content: `Sending message.`, ephemeral: true });
 			interaction.channel.send(message);
 		}
-		else {
-			await interaction.reply({ content: `You ain't oishi, shoo.`, ephemeral: true });
-		}
-		return message;
+		else await interaction.reply({ content: `You ain't oishi, shoo.`, ephemeral: true });
+		return "Done";
   }
 }

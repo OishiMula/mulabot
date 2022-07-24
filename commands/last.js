@@ -10,7 +10,7 @@ module.exports = {
 		.setName('last')
 		.setDescription('Retrieve the last # sales made')
 		.addStringOption(option => option.setName('project').setDescription('Enter a project name').setRequired(true))
-		.addIntegerOption(option => option.setName('amount').setDescription('Retrieve the last # sales made').setMinValue(1).setMaxValue(20)),
+		.addIntegerOption(option => option.setName('amount').setDescription('Retrieve the last # sales made').setMinValue(1).setMaxValue(10)),
 	async execute(interaction) {
 		let projectName = interaction.options.getString('project');
 		// shortcut check
@@ -29,11 +29,11 @@ module.exports = {
 		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
 		
 		// Retrieve recent sales
+		// TODO: Add more pages
 		const jpgSalesJ = await mulaFN.download(`${mulaFN.jpgPolicyAPI}${project.policy_id}/sales?page=1`, 'data');
 		const jpgSalesData = jpgSalesJ.slice(0,amount);
 
 		// Preparing the message content
-		// TODO: More than 10
 		function saleMsg(sale) {
 			let msg = ''
 			for (let i = 0; i < sale.length; i += 1) {
@@ -49,6 +49,7 @@ module.exports = {
 			content : saleMsg(jpgSalesData),
 			thumbnail : `${mulaFN.ipfsBase}${imgURL}`
 		}
+		
 
 		const embed = await mulaFN.createMsg(msgPayload);
 

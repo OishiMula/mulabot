@@ -27,5 +27,6 @@ async execute(interaction) {
 
   const embed = await mulaFN.createMsg(msgPayload);
   await interaction.reply({ embeds: [embed], ephemeral: true });
+  return 'Done';
   }
 }

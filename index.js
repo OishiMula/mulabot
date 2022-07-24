@@ -9,13 +9,10 @@ require('dotenv').config();
 const fs = require('node:fs');
 const token = process.env.MULA_TOKEN;
 const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
-const randomFile = require('select-random-file') 
-const extrasPath = '/home/pi/projects/js/mula_bot/extras/'
-const epochFile = '/home/pi/projects/js/mula_bot/extras/epoch.txt'
+const path = require('path');
 
 // Create Discord client Instance
 const { Client, Collection, Intents } = require('discord.js');
-const { download } = require('./mula_functions');
 const discordIntents = new Intents();
 discordIntents.add(Intents.FLAGS.GUILDS, 
 	Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, 
@@ -32,40 +29,19 @@ for (const file of commandFiles) {
 	client.commands.set(command.data.name, command);
 }
 
-async function writeFile(data, file) {
-  fs.writeFileSync(file, JSON.stringify(data), (err) => {
-    if (err) console.log(err);
-  });
+// To load events
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
+
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
 }
-
-client.once('ready', async () => {
-  console.log("Mula Bot Starting");
-	
-	// Epoch Countdown loop
-	const checkMinutes = 0.1, checkInterval = checkMinutes * 60 * 1000;
-	setInterval(async () => {
-		// File check
-		if (!fs.existsSync(`${extrasPath}epoch.txt`)) {
-			console.error("Error with Epoch file");
-			const firstTimeEpoch = await download('null', 'epoch');
-			await writeFile(firstTimeEpoch, epochFile);
-		}
-
-		// Check epoch end's time and compare
-		const epoch = await download(epochFile, 'local');
-		const now = new Date().getTime();
-		if (epoch.end > now) {
-			console.log(`New Epoch -- Epoch ${epoch.current}`)
-			const annoucementsChannel = client.channels.cache.get('941428920488718406');
-			annoucementsChannel.send(`TESTING!
-			<a:sirenred:944494985288515644> **A NEW EPOCH HAS BEGUN!** <a:sirenred:944494985288515644>
-			We are now on **Epoch ${epoch.current}** 
-			Don't forget your Dripdropz at https://dripdropz.io/`);
-			const newEpoch = await download('null', 'epoch');
-			await writeFile(newEpoch, epochFile);
-		}
-	}, checkInterval);
-});
 
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
@@ -88,207 +64,6 @@ client.on('interactionCreate', async interaction => {
 		console.error(`ERROR: Command: ${interaction.commandName} - ${userInput[1]} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`);
 	}
 });
-
-client.on('messageCreate',async (message) => {
-	if(message.author.bot) return;
-
-	// Plxce Beats
-	if (message.content.toLowerCase() === "drop the beat") {
-		console.log(`Command: Drop the beat -- ${message.author.tag}`)
-		await message.channel.send({
-			files: [{
-				attachment: `${extrasPath}herewego.gif`,
-				name: `hereweGO.gif`
-			},
-			{
-				attachment: `${extrasPath}brunch_for_dinner.mp3`,
-				name: `brunch_for_dinner.mp3`
-			}]
-		});
-	}
-
-	// Sheesh
-	if (message.content.toLowerCase().split(" ").includes('sheesh')) {
-		console.log(`Command: Sheesh -- ${message.author.tag}`)
-		await message.channel.send({
-			files: [{
-				attachment: `${extrasPath}sheesh.mp3`,
-				name: `sheesh.mp3`
-			}]
-		});
-	}
-
-	// bitconnect
-	if (message.content.toLowerCase().split(" ").includes('bitconnect')) {
-		console.log(`Command: Bitconnect -- ${message.author.tag}`)
-		await message.channel.send({
-			content: "Did someone say.. bitconnect?",
-			files: [{
-				attachment: `${extrasPath}bitconnnnnnnnect.mp3`,
-				name: `BITCONNNNNNNNNNNNNNNECT.mp3`
-			}]
-		});
-	}
-
-	// real kong shit
-	if (message.content.toLowerCase().includes('real kong shit')) {
-		console.log(`Command: Real kong shit -- ${message.author.tag}`)
-		await message.channel.send({
-			files: [{
-				attachment: `${extrasPath}realkongshit.mp4`,
-				name: `realkongshitbyplxce.mp4`
-			}]
-		});
-	}
-
-	// Puta
-	if (message.content.toLowerCase().split(" ").includes('puta')) {
-		console.log(`Command: Puta -- ${message.author.tag}`)
-		await message.channel.send({
-			files: [{
-				attachment: `${extrasPath}puta.gif`,
-				name: `malditaPUTAcono.gif`
-			}]
-		});
-	}
-
-	// Jimmy 
-	if (message.content.toLowerCase().split(" ").includes('jimmy')) {
-		console.log(`Command: Jimmy -- ${message.author.tag}`)
-		const jimmyDir = `${extrasPath}/jimmy`
-		randomFile(jimmyDir, (Err, jimmyGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${jimmyDir}/${jimmyGif}`,
-					name: `JIMMY.gif`
-				}]
-			});
-		});
-	}
-
-	// Degen 
-	if (message.content.toLowerCase().split(" ").includes('degen')) {
-		console.log(`Command: Degen -- ${message.author.tag}`)
-		const degenDir = `${extrasPath}/degen`
-		randomFile(degenDir, (Err, degenGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${degenDir}/${degenGif}`,
-					name: `degenbois.gif`
-				}]
-			});
-		});
-	}
-
-	// Cardano
-	if (message.content.toLowerCase().split(" ").includes('cardano')) {
-		console.log(`Command: Cardano -- ${message.author.tag}`)
-		const cardanoDir = `${extrasPath}/cardano`
-		randomFile(cardanoDir, (Err, cardanoGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${cardanoDir}/${cardanoGif}`,
-					name: `believeInCardano.gif`
-				}]
-			});
-		});
-	}
-
-	// Crypto / Bear
-	if (message.content.toLowerCase().split(" ").includes('bear') || message.content.toLowerCase().split(" ").includes('crypto')) {
-		console.log(`Command: Crypto/Bear -- ${message.author.tag}`)
-		const cryptoDir = `${extrasPath}/crypto`
-		randomFile(cryptoDir, (Err, cryptoGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${cryptoDir}/${cryptoGif}`,
-					name: `WAGMIIII.gif`
-				}]
-			});
-		});
-	}
-
-	// RIP
-	if (message.content.toLowerCase().split(" ").includes('rip') || 
-	message.content.toLowerCase().split(" ").includes('gingers') || 
-	message.content.toLowerCase().split(" ").includes('ginger')) {
-		console.log(`Command: Rip/Gingers -- ${message.author.tag}`)
-		const ripDir = `${extrasPath}/rip`
-		randomFile(ripDir, (Err, ripGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${ripDir}/${ripGif}`,
-					name: `ripMfer.gif`
-				}]
-			});
-		});
-	}
-
-	// Solana Summer
-	if (message.content.toLowerCase().split(" ").includes('solana')) {
-		console.log(`Command: Solana -- ${message.author.tag}`)
-		const solanaDir = `${extrasPath}/solana`
-		randomFile(solanaDir, (Err, solanaGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${solanaDir}/${solanaGif}`,
-					name: `EWWsolanaWTF.gif`
-				}]
-			});
-		});
-	}
-
-	// Shillington
-	if (message.content.toLowerCase().split(" ").includes('shillington') || message.content.toLowerCase().split(" ").includes('ups')) {
-		console.log(`Command: Shillington/UPS -- ${message.author.tag}`)
-		const upsDir = `${extrasPath}/ups`
-		randomFile(upsDir, (Err, upsGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${upsDir}/${upsGif}`,
-					name: `UPSManShillington.gif`
-				}]
-			});
-		});
-	}
-		
-	// here we go
-	if (message.content.toLowerCase().includes("here we go")) {
-		console.log(`Command: Here we go -- ${message.author.tag}`)
-		const herewegoDir = `${extrasPath}/herewego`
-		randomFile(herewegoDir, (Err, herewegoGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${herewegoDir}/${herewegoGif}`,
-					name: `hereweGO.gif`
-				}]
-			});
-		});
-	}
-
-	// mini messi
-	if (message.content.toLowerCase().split(" ").includes("mini messi") || message.content.toLowerCase().split(" ").includes('messi')) {
-		console.log(`Command: Messi -- ${message.author.tag}`)
-		const minimessiDir = `${extrasPath}/messi`
-		randomFile(minimessiDir, (Err, minimessiGif) => {
-			message.channel.send({
-				files: [{
-					attachment: `${minimessiDir}/${minimessiGif}`,
-					name: `minimessi.gif`
-				}]
-			});
-		});
-	}
-
-	});
-
-
-/* Commands Missing:
-TODO: toke
-TODO: mmm
-TODO: traitfloor
-TODO: addproject
-*/
 
 client.login(token);
 

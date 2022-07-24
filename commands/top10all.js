@@ -30,5 +30,6 @@ module.exports = {
     const embed = await mulaFN.createMsg(msgPayload);
 
     await interaction.reply({ embeds: [ embed ] });
+    return 'Done';
   }
 }

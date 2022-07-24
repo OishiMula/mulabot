@@ -12,8 +12,9 @@ module.exports = {
 
 		// crew check - fun sayings
 		if (projectName in mulaFN.CREW) {
-			console.log(`Command: Floor | Crew - ${projectName} -- ${interaction.user.tag}`)
-			return await interaction.reply(`${projectName} - ${mulaFN.choose(mulaFN.CREW[projectName])}`)
+			console.log(`Command: Floor | Crew - ${projectName} -- ${interaction.user.tag}`);
+			await interaction.reply(`${projectName} - ${mulaFN.choose(mulaFN.CREW[projectName])}`);
+			return "Done";
 		}
 
 		// shortcut check

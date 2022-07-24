@@ -7,5 +7,6 @@ module.exports = {
 
 async execute(interaction) {
     await interaction.reply('Just be polite and life\'s good.');
+    return 'Done';
   }
 }
