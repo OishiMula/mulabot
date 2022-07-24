@@ -6,7 +6,7 @@ const epochFile = '/home/pi/projects/js/mula_bot/extras/epoch.txt'
 module.exports = {
   name: 'ready',
   once: true,
-  execute(client)  {
+  execute(client) {
     console.log("Mula Bot Starting");
 
     async function writeFile(data, file) {
@@ -14,10 +14,11 @@ module.exports = {
         if (err) console.log(err);
       });
     }
-    
-	
+
+
     // Epoch Countdown loop
-    const checkMinutes = 0.1, checkInterval = checkMinutes * 60 * 1000;
+    const checkMinutes = 0.1,
+      checkInterval = checkMinutes * 60 * 1000;
     setInterval(async () => {
       // File check
       if (!fs.existsSync(`${extrasPath}epoch.txt`)) {
@@ -25,7 +26,7 @@ module.exports = {
         const firstTimeEpoch = await mulaFN.download('null', 'epoch');
         await writeFile(firstTimeEpoch, epochFile);
       }
-  
+
       // Check epoch end's time and compare
       const epoch = await mulaFN.download(epochFile, 'local');
       const now = new Date().getTime();

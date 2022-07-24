@@ -1,4 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const {
+	SlashCommandBuilder
+} = require('@discordjs/builders');
 const ordinal = require('ordinal')
 const dayjs = require('dayjs')
 const relativeTime = require('dayjs/plugin/relativeTime')
@@ -24,14 +26,14 @@ module.exports = {
 		// Retrieve proeject name <--> PolicyID match
 		const project = await mulaFN.download(projectName, 'project')
 		if (project === "error") return ['error', projectName];
-		
+
 		// Get CNFT Project Image
 		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
-		
+
 		// Retrieve recent sales
 		// TODO: Add more pages
 		const jpgSalesJ = await mulaFN.download(`${mulaFN.jpgPolicyAPI}${project.policy_id}/sales?page=1`, 'data');
-		const jpgSalesData = jpgSalesJ.slice(0,amount);
+		const jpgSalesData = jpgSalesJ.slice(0, amount);
 
 		// Preparing the message content
 		function saleMsg(sale) {
@@ -43,17 +45,19 @@ module.exports = {
 		}
 
 		const msgPayload = {
-			title : 'Last',
-			source : 'jpg',
-			header : project.display_name,
-			content : saleMsg(jpgSalesData),
-			thumbnail : `${mulaFN.ipfsBase}${imgURL}`
+			title: 'Last',
+			source: 'jpg',
+			header: project.display_name,
+			content: saleMsg(jpgSalesData),
+			thumbnail: `${mulaFN.ipfsBase}${imgURL}`
 		}
-		
+
 
 		const embed = await mulaFN.createMsg(msgPayload);
 
-		await interaction.reply({ embeds: [ embed ] });
+		await interaction.editReply({
+			embeds: [embed]
+		});
 		return project.display_name;
 	},
 };

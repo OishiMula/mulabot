@@ -1,7 +1,9 @@
 require('dotenv').config();
 const fs = require('fs');
 const fetch = require('cross-fetch');
-const { MessageEmbed } = require('discord.js');
+const {
+  MessageEmbed
+} = require('discord.js');
 const Blockfrost = require('@blockfrost/blockfrost-js');
 const Fuse = require('fuse.js');
 
@@ -11,7 +13,7 @@ const jpgCollectionAPI = 'https://server.jpgstoreapis.com/collection/';
 const jpgPolicyAPI = 'https://server.jpgstoreapis.com/policy/';
 const jpgStoreLink = 'https://www.jpg.store/collection/';
 const opencnftPolicyAPI = 'https://api.opencnft.io/1/policy/';
-const openSeaAPI ='https://api.opensea.io/api/v1/collection/';
+const openSeaAPI = 'https://api.opensea.io/api/v1/collection/';
 const ipfsBase = 'https://infura-ipfs.io/ipfs/';
 const MULA_BOT_IMG = 'https://bafybeidb6f5rr27no5ghctfbac4zktulwa4ku6rfhuardx3iwu7cvocl4q.ipfs.infura-ipfs.io/';
 const jpgStoreLogo = 'QmbbfCQQBuVcWkX7hJ23LVNgoXRQi4mAVzT92mmcwBvqFF';
@@ -67,15 +69,15 @@ const SHORTCUTS = {
   "htc": "happytigersclub",
   "hw": "havoc worlds",
   "knfty": "knftyworldknftycreatures",
-  "mmb" : "meltingmoonboy",
-  "mdcc" : "maddogcarclub",
-  "mek" : "mekanism",
+  "mmb": "meltingmoonboy",
+  "mdcc": "maddogcarclub",
+  "mek": "mekanism",
   "pxlz": "deadpxlz",
   "soho": "soho kids",
   "unsigs": "unsigned_algorithms",
-  "vox kongs" : "boss planet vox kongs",
-  "tangz" : "wild tangz",
-  "yetis" : "smooth yeti mountain club",
+  "vox kongs": "boss planet vox kongs",
+  "tangz": "wild tangz",
+  "yetis": "smooth yeti mountain club",
 }
 
 const SHORTCUTS_ETH = {
@@ -83,18 +85,18 @@ const SHORTCUTS_ETH = {
   "buttheads": "buttheads-real",
   "degentoonz": "degentoonz-collection",
   "lemons": "little-lemon-friends",
-  "soulz" : "soulz-monogatari7777",
+  "soulz": "soulz-monogatari7777",
 }
 
 const ERROR_SAYINGS = [
-  "Typo maybe? Dum dum", 
-  "Common L for you", 
-  "Failing like Solana", 
-  "Try again I guess", 
-  "you fucking up", 
-  "shit's lost like Linguini", 
-  "sry come again", 
-  "nope no dice", 
+  "Typo maybe? Dum dum",
+  "Common L for you",
+  "Failing like Solana",
+  "Try again I guess",
+  "you fucking up",
+  "shit's lost like Linguini",
+  "sry come again",
+  "nope no dice",
   "nah but in other news, Oishi is dope.",
   "NOPE.",
   "so sorry oh well",
@@ -116,9 +118,9 @@ module.exports = {
   ERROR_SAYINGS,
 }
 
-module.exports.download = async function(data, type) {
+module.exports.download = async function (data, type) {
   let response;
-  
+
   switch (type) {
     case 'data':
       response = await fetch(data);
@@ -127,7 +129,7 @@ module.exports.download = async function(data, type) {
     case 'thumbnail': {
       response = await fetch(data);
       let imgJ = await response.json();
-      if (typeof(imgJ.thumbnail) !== 'string') return jpgStoreLogo;
+      if (typeof (imgJ.thumbnail) !== 'string') return jpgStoreLogo;
       return imgJ.thumbnail.slice(7);
     }
 
@@ -143,34 +145,35 @@ module.exports.download = async function(data, type) {
         shouldSort: true,
         useExtendedSearch: true
       };
-      
+
       let jpgPage, jpgResponse, jpgData, exactMatch, fuse;
       let result = [];
       let blacklistWords = ["Exclusives"];
 
-      for (let num = 1; ; num += 1) {
+      for (let num = 1;; num += 1) {
         jpgPage = `${jpgPolicy}${num}`;
         jpgResponse = await fetch(jpgPage);
         jpgData = await jpgResponse.json();
         exactMatch = result.find(exact => exact.score === 0)
-      
-      if (jpgData.length > 0) {
-        fuse = new Fuse(jpgData, options);
-        result.push(fuse.search(`${data} !${blacklistWords}`));
-        
-        if (result.length === 0) continue;
-        else {
-          result = result.flat();
-          for (let exact in result) if (result[exact].score.toString().includes('e') || result[exact].score < 0.0002) result[exact].score = 0; 
-          continue;
+
+        if (jpgData.length > 0) {
+          fuse = new Fuse(jpgData, options);
+          result.push(fuse.search(`${data} !${blacklistWords}`));
+
+          if (result.length === 0) continue;
+          else {
+            result = result.flat();
+            for (let exact in result)
+              if (result[exact].score.toString().includes('e') || result[exact].score < 0.0002) result[exact].score = 0;
+            continue;
+          }
+        } else {
+          if (result.length === 0) return "error";
+          if (exactMatch) return exactMatch.item;
+          return (result[0].item);
         }
       }
-      else {
-        if (result.length === 0) return "error";
-        if (exactMatch) return exactMatch.item;
-        return(result[0].item);
-      }
-    }}
+    }
 
     case 'eproject': {
       response = await fetch(data);
@@ -185,8 +188,8 @@ module.exports.download = async function(data, type) {
     case 'epoch': {
       const latestEpoch = await API.epochsLatest();
       const epoch = {
-        current : latestEpoch.epoch,
-        end : latestEpoch.end_time
+        current: latestEpoch.epoch,
+        end: latestEpoch.end_time
       }
       return epoch;
     }
@@ -202,7 +205,7 @@ module.exports.download = async function(data, type) {
   }
 }
 
-module.exports.createMsg = async function(payload) {
+module.exports.createMsg = async function (payload) {
   const author = {
     name: 'Mula Bot - Degens Den Servant',
     iconURL: `${MULA_BOT_IMG}`
@@ -211,23 +214,33 @@ module.exports.createMsg = async function(payload) {
   let footer;
   switch (payload.source) {
     case 'jpg': {
-      footer = { text: 'Data provided by jpg.store' };
+      footer = {
+        text: 'Data provided by jpg.store'
+      };
       break;
     }
     case 'opencnft': {
-      footer = { text: 'Data provided by opencnft.io'};
+      footer = {
+        text: 'Data provided by opencnft.io'
+      };
       break;
     }
     case 'opensea': {
-      footer = { text: 'Data provided by opensea.io' };
+      footer = {
+        text: 'Data provided by opensea.io'
+      };
       break;
     }
     case 'museliswap': {
-      footer = { text: 'Data provided by museliswap.com'};
+      footer = {
+        text: 'Data provided by museliswap.com'
+      };
       break;
     }
     default:
-      footer = { text: 'Data provided by ME' };
+      footer = {
+        text: 'Data provided by ME'
+      };
       break;
   }
 
@@ -244,7 +257,7 @@ module.exports.createMsg = async function(payload) {
   return newMessage;
 }
 
-module.exports.choose = function(choices) {
+module.exports.choose = function (choices) {
   var index = Math.floor(Math.random() * choices.length);
   return choices[index];
 }

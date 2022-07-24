@@ -12,14 +12,25 @@ const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
 const path = require('path');
 
 // Create Discord client Instance
-const { Client, Collection, Intents } = require('discord.js');
+const {
+	Client,
+	Collection,
+	Intents
+} = require('discord.js');
 const discordIntents = new Intents();
-discordIntents.add(Intents.FLAGS.GUILDS, 
-	Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, 
-	Intents.FLAGS.GUILD_MESSAGE_REACTIONS, 
-	Intents.FLAGS.DIRECT_MESSAGES, 
+discordIntents.add(Intents.FLAGS.GUILDS,
+	Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+	Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+	Intents.FLAGS.DIRECT_MESSAGES,
 	Intents.FLAGS.GUILD_MESSAGES)
-const client = new Client({ intents: discordIntents });
+const client = new Client({
+	intents: discordIntents
+});
+
+// Commands sent silently
+const ephemeralCommands = [
+	'shorts', 'wtf', 'msg'
+];
 
 // To load commands
 client.commands = new Collection();
@@ -49,8 +60,13 @@ client.on('interactionCreate', async interaction => {
 	const command = client.commands.get(interaction.commandName);
 
 	if (!command) return;
+	
 
 	const t0 = performance.now();
+	if (ephemeralCommands.includes(interaction.commandName)) {
+		await interaction.deferReply({ interaction, ephemeral: true });
+	}
+	else await interaction.deferReply();
 	let userInput = await command.execute(interaction);
 
 	try {
@@ -65,5 +81,7 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
+// TODO: mmm mode / party mode
+// TODO: toke
+// TODO: 0verdrips connect to jpg store
 client.login(token);
-

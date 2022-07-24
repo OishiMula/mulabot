@@ -1,7 +1,11 @@
 require('dotenv').config();
 const fs = require('node:fs');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
+const {
+	REST
+} = require('@discordjs/rest');
+const {
+	Routes
+} = require('discord-api-types/v9');
 const token = process.env.MULA_TOKEN;
 const guildIds = [process.env.GID_TOKEN, process.env.USAGI_GID_TOKEN];
 const clientId = process.env.CLIENT_ID;
@@ -14,13 +18,19 @@ for (const file of commandFiles) {
 	commands.push(command.data.toJSON());
 }
 
-const rest = new REST({ version: '9' }).setToken(token);
+const rest = new REST({
+	version: '9'
+}).setToken(token);
 
 
-rest.put(Routes.applicationGuildCommands(clientId, guildIds[0]), { body: commands })
+rest.put(Routes.applicationGuildCommands(clientId, guildIds[0]), {
+		body: commands
+	})
 	.then(() => console.log('Degens Dens - Successfully registered application commands.'))
 	.catch(console.error);
 
-rest.put(Routes.applicationGuildCommands(clientId, guildIds[1]), { body: commands })
+rest.put(Routes.applicationGuildCommands(clientId, guildIds[1]), {
+		body: commands
+	})
 	.then(() => console.log('Usagis Den - Successfully registered application commands.'))
 	.catch(console.error);

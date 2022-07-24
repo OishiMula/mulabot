@@ -1,4 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const {
+	SlashCommandBuilder
+} = require('@discordjs/builders');
 const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
 
 module.exports = {
@@ -13,7 +15,7 @@ module.exports = {
 		// crew check - fun sayings
 		if (projectName in mulaFN.CREW) {
 			console.log(`Command: Floor | Crew - ${projectName} -- ${interaction.user.tag}`);
-			await interaction.reply(`${projectName} - ${mulaFN.choose(mulaFN.CREW[projectName])}`);
+			await interaction.editReply(`${projectName} - ${mulaFN.choose(mulaFN.CREW[projectName])}`);
 			return "Done";
 		}
 
@@ -24,7 +26,7 @@ module.exports = {
 
 		const project = await mulaFN.download(projectName, 'project');
 		if (project === "error") return ['error', projectName];
-		
+
 		// Get CNFT Project Image
 		const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
 
@@ -33,17 +35,19 @@ module.exports = {
 		const floorPrice = String(jpgFloorJ.floor / 1000000);
 
 		msgPayload = {
-			title : 'Floor',
-			source : 'jpg',
-			header : project.display_name,
-			content : `Floor price: **₳${floorPrice}**
+			title: 'Floor',
+			source: 'jpg',
+			header: project.display_name,
+			content: `Floor price: **₳${floorPrice}**
 			[jpg.store link](${mulaFN.jpgStoreLink}${project.url})`,
-			thumbnail : `${mulaFN.ipfsBase}${imgURL}`
+			thumbnail: `${mulaFN.ipfsBase}${imgURL}`
 		}
 
-	const embed = await mulaFN.createMsg(msgPayload);
-	
-	await interaction.reply({ embeds: [ embed ] });
-	return project.display_name;
+		const embed = await mulaFN.createMsg(msgPayload);
+
+		await interaction.editReply({
+			embeds: [embed]
+		});
+		return project.display_name;
 	},
 };

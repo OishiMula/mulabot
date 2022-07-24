@@ -1,4 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const {
+	SlashCommandBuilder
+} = require('@discordjs/builders');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -11,13 +13,13 @@ module.exports = {
 
 		try {
 			newName = interaction.options.getString('name');
-		} catch(error)  {
+		} catch (error) {
 			console.log("ding")
 			newName = 0;
 		}
 		try {
 			newStatus = interaction.options.getString('status');
-		} catch(error)  {
+		} catch (error) {
 			newStatus = 0;
 		}
 
@@ -25,16 +27,23 @@ module.exports = {
 		console.log(newStatus)
 		if (interaction.user.id === '374929603594027018') {
 			if (newName) {
-				await interaction.reply({ content: `Setting name as ${newName}`, ephemeral: true });
+				await interaction.editReply({
+					content: `Setting name as ${newName}`,
+					ephemeral: true
+				});
 				interaction.client.user.setUsername(newName);
 			}
 			if (newStatus) {
-				await interaction.reply({ content: `Setting status as ${newStatus}`, ephemeral: true });
+				await interaction.editReply({
+					content: `Setting status as ${newStatus}`,
+					ephemeral: true
+				});
 				interaction.client.user.setActivity(newStatus);
 			}
-		}
-
-		else await interaction.reply({ content: `You ain't oishi, shoo.`, ephemeral: true });	
+		} else await interaction.editReply({
+			content: `You ain't oishi, shoo.`,
+			ephemeral: true
+		});
 		return "Done";
-  }
+	}
 }

@@ -1,4 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const {
+  SlashCommandBuilder
+} = require('@discordjs/builders');
 const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
 const ordinal = require('ordinal')
 
@@ -17,12 +19,12 @@ module.exports = {
 
     // retrieve data
     const project = await mulaFN.download(projectName, 'project');
-		if (project === "error") return ['error', projectName];
-  
+    if (project === "error") return ['error', projectName];
+
     const imgURL = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}`, 'thumbnail');
     const openCNFTData = await mulaFN.download(`${mulaFN.opencnftPolicyAPI}${project.policy_id}/transactions?order=price`, 'data');
-    const projectATHSales = openCNFTData['items'].slice(0,10);
-    
+    const projectATHSales = openCNFTData['items'].slice(0, 10);
+
     // format data for message
     function saleMsg(sale) {
       let msg = ''
@@ -33,16 +35,18 @@ module.exports = {
     }
 
     const msgPayload = {
-      title : 'Top 10',
-      source : 'opencnft',
-      header : project.display_name,
-      content : saleMsg(projectATHSales),
-      thumbnail : `${mulaFN.ipfsBase}${imgURL}`
+      title: 'Top 10',
+      source: 'opencnft',
+      header: project.display_name,
+      content: saleMsg(projectATHSales),
+      thumbnail: `${mulaFN.ipfsBase}${imgURL}`
     }
 
     const embed = await mulaFN.createMsg(msgPayload);
 
-    await interaction.reply({ embeds: [ embed ] });
+    await interaction.editReply({
+      embeds: [embed]
+    });
     return project.display_name;
   }
 }

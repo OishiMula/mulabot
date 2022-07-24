@@ -1,4 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const {
+	SlashCommandBuilder
+} = require('@discordjs/builders');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -6,12 +8,11 @@ module.exports = {
 		.setDescription('Yes master?')
 		.addStringOption(option => option.setName('saying').setDescription('Whatcha want me to say?').setRequired(true)),
 	async execute(interaction) {
-    const message = interaction.options.getString('saying');
+		const message = interaction.options.getString('saying');
 		if (interaction.user.id === '374929603594027018') {
-			await interaction.reply({ content: `Sending message.`, ephemeral: true });
+			await interaction.editReply(`Sending message.`);
 			interaction.channel.send(message);
-		}
-		else await interaction.reply({ content: `You ain't oishi, shoo.`, ephemeral: true });
+		} else await interaction.editReply(`You ain't oishi, shoo.`);
 		return "Done";
-  }
+	}
 }

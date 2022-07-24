@@ -3,26 +3,27 @@ const randomFile = require('select-random-file');
 
 module.exports = {
   name: 'messageCreate',
-  execute(message)  {
+  execute(message) {
     //if (message.content.toLowerCase() === 'test') console.log(message);
 
-    if(message.author.bot) return;
+    if (message.author.bot) return;
 
     // Plxce Beats
     if (message.content.toLowerCase() === "drop the beat") {
       console.log(`Command: Drop the beat -- ${message.author.tag}`)
       message.channel.send({
         files: [{
-          attachment: `${extrasPath}herewego.gif`,
-          name: `hereweGO.gif`
-        },
-        {
-          attachment: `${extrasPath}brunch_for_dinner.mp3`,
-          name: `brunch_for_dinner.mp3`
-        }]
+            attachment: `${extrasPath}herewego.gif`,
+            name: `hereweGO.gif`
+          },
+          {
+            attachment: `${extrasPath}brunch_for_dinner.mp3`,
+            name: `brunch_for_dinner.mp3`
+          }
+        ]
       });
     }
-  
+
     // Sheesh
     if (message.content.toLowerCase().split(" ").includes('sheesh')) {
       console.log(`Command: Sheesh -- ${message.author.tag}`)
@@ -33,7 +34,7 @@ module.exports = {
         }]
       });
     }
-  
+
     // bitconnect
     if (message.content.toLowerCase().split(" ").includes('bitconnect')) {
       console.log(`Command: Bitconnect -- ${message.author.tag}`)
@@ -45,7 +46,7 @@ module.exports = {
         }]
       });
     }
-  
+
     // real kong shit
     if (message.content.toLowerCase().includes('real kong shit')) {
       console.log(`Command: Real kong shit -- ${message.author.tag}`)
@@ -56,7 +57,7 @@ module.exports = {
         }]
       });
     }
-  
+
     // Puta
     if (message.content.toLowerCase().split(" ").includes('puta')) {
       console.log(`Command: Puta -- ${message.author.tag}`)
@@ -67,7 +68,7 @@ module.exports = {
         }]
       });
     }
-  
+
     // Jimmy 
     if (message.content.toLowerCase().split(" ").includes('jimmy')) {
       console.log(`Command: Jimmy -- ${message.author.tag}`)
@@ -81,7 +82,7 @@ module.exports = {
         });
       });
     }
-  
+
     // Degen 
     if (message.content.toLowerCase().split(" ").includes('degen')) {
       console.log(`Command: Degen -- ${message.author.tag}`)
@@ -95,7 +96,7 @@ module.exports = {
         });
       });
     }
-  
+
     // Cardano
     if (message.content.toLowerCase().split(" ").includes('cardano')) {
       console.log(`Command: Cardano -- ${message.author.tag}`)
@@ -109,7 +110,7 @@ module.exports = {
         });
       });
     }
-  
+
     // Crypto / Bear
     if (message.content.toLowerCase().split(" ").includes('bear') || message.content.toLowerCase().split(" ").includes('crypto')) {
       console.log(`Command: Crypto/Bear -- ${message.author.tag}`)
@@ -123,11 +124,11 @@ module.exports = {
         });
       });
     }
-  
+
     // RIP
-    if (message.content.toLowerCase().split(" ").includes('rip') || 
-    message.content.toLowerCase().split(" ").includes('gingers') || 
-    message.content.toLowerCase().split(" ").includes('ginger')) {
+    if (message.content.toLowerCase().split(" ").includes('rip') ||
+      message.content.toLowerCase().split(" ").includes('gingers') ||
+      message.content.toLowerCase().split(" ").includes('ginger')) {
       console.log(`Command: Rip/Gingers -- ${message.author.tag}`)
       const ripDir = `${extrasPath}/rip`
       randomFile(ripDir, (Err, ripGif) => {
@@ -139,7 +140,7 @@ module.exports = {
         });
       });
     }
-  
+
     // Solana Summer
     if (message.content.toLowerCase().split(" ").includes('solana')) {
       console.log(`Command: Solana -- ${message.author.tag}`)
@@ -153,7 +154,7 @@ module.exports = {
         });
       });
     }
-  
+
     // Shillington
     if (message.content.toLowerCase().split(" ").includes('shillington') || message.content.toLowerCase().split(" ").includes('ups')) {
       console.log(`Command: Shillington/UPS -- ${message.author.tag}`)
@@ -167,7 +168,7 @@ module.exports = {
         });
       });
     }
-      
+
     // here we go
     if (message.content.toLowerCase().includes("here we go")) {
       console.log(`Command: Here we go -- ${message.author.tag}`)
@@ -181,7 +182,7 @@ module.exports = {
         });
       });
     }
-  
+
     // mini messi
     if (message.content.toLowerCase().split(" ").includes("mini messi") || message.content.toLowerCase().split(" ").includes('messi')) {
       console.log(`Command: Messi -- ${message.author.tag}`)
