@@ -7,9 +7,9 @@ pm2 start index.js --name MulaBot --log-date-format "MM-DD | hh:mm:ss a"
 // Add required libs
 require('dotenv').config();
 const fs = require('node:fs');
-const token = process.env.MULA_TOKEN;
-const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
 const path = require('path');
+const token = process.env.MULA_TOKEN;
+const mulaFN = require('./mula_functions.js');
 
 // Create Discord client Instance
 const {
@@ -54,19 +54,25 @@ for (const file of eventFiles) {
 	}
 }
 
+// Check command and start process
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
 	const command = client.commands.get(interaction.commandName);
-
 	if (!command) return;
-	
 
+	// Start a timer to see how long the command takes
 	const t0 = performance.now();
+
+	// If it's a command that needs to be sent quietly, else do a regular command
 	if (ephemeralCommands.includes(interaction.commandName)) {
-		await interaction.deferReply({ interaction, ephemeral: true });
-	}
-	else await interaction.deferReply();
+		await interaction.deferReply({
+			interaction,
+			ephemeral: true
+		});
+	} else await interaction.deferReply();
+
+	// Start the command, userInput is the end result for the try block - either pass or fail
 	let userInput = await command.execute(interaction);
 
 	try {
@@ -76,12 +82,15 @@ client.on('interactionCreate', async interaction => {
 		console.log(`Command: ${interaction.commandName} - ${userInput} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`)
 	} catch (error) {
 		const t1 = performance.now();
-		await interaction.reply(`I couldn't find ${userInput[1]} -- ${mulaFN.choose(mulaFN.ERROR_SAYINGS)}`);
+		await interaction.editReply(`I couldn't find ${userInput[1]} -- ${mulaFN.choose(mulaFN.ERROR_SAYINGS)}`);
 		console.error(`ERROR: Command: ${interaction.commandName} - ${userInput[1]} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`);
 	}
 });
 
-// TODO: mmm mode / party mode
-// TODO: toke
-// TODO: 0verdrips connect to jpg store
 client.login(token);
+
+/* Personal Todo list:
+TODO: mmm mode / party mode
+TODO: toke
+TODO: 0verdrips connect to jpg store
+*/
