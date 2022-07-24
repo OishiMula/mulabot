@@ -9,7 +9,7 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('path');
 const token = process.env.MULA_TOKEN;
-const mulaFN = require('./mula_functions.js');
+const mulaFN = require('./mula_functions');
 
 // Create Discord client Instance
 const {

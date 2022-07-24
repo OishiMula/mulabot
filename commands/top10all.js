@@ -1,7 +1,7 @@
 const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
-const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
+const mulaFN = require('../mula_functions');
 const ordinal = require('ordinal');
 const {
   millify

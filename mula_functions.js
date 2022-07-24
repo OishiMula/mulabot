@@ -1,6 +1,5 @@
 require('dotenv').config();
 const fs = require('fs');
-const fetch = require('cross-fetch');
 const {
   MessageEmbed
 } = require('discord.js');
@@ -8,9 +7,8 @@ const Blockfrost = require('@blockfrost/blockfrost-js');
 const Fuse = require('fuse.js');
 
 // API Endpoints
-const jpgPolicyLookupAPI = 'https://server.jpgstoreapis.com/search/collections?verified=should-be-verified&nameQuery=';
 const jpgCollectionAPI = 'https://server.jpgstoreapis.com/collection/';
-const jpgPolicyAPI = 'https://server.jpgstoreapis.com/policy/';
+const jpgPolicyAPI = 'https://server.jpgstoreapis.com/policy/verified?page=';
 const jpgStoreLink = 'https://www.jpg.store/collection/';
 const opencnftPolicyAPI = 'https://api.opencnft.io/1/policy/';
 const openSeaAPI = 'https://api.opensea.io/api/v1/collection/';
@@ -104,7 +102,6 @@ const ERROR_SAYINGS = [
 ]
 
 module.exports = {
-  jpgPolicyLookupAPI,
   jpgCollectionAPI,
   jpgPolicyAPI,
   jpgStoreLink,
@@ -134,12 +131,10 @@ module.exports.download = async function (data, type) {
     }
 
     case 'project': {
-      let jpgPolicy = 'https://server.jpgstoreapis.com/policy/verified?page=';
       // Set up Fuse options to search jpg.store
       const options = {
         keys: ['url', 'display_name', 'policy_id'],
         threshold: 0.3,
-        //ignoreLocation: true,
         includeScore: true,
         findAllMatches: true,
         shouldSort: true,
@@ -151,7 +146,7 @@ module.exports.download = async function (data, type) {
       let blacklistWords = ["Exclusives"];
 
       for (let num = 1;; num += 1) {
-        jpgPage = `${jpgPolicy}${num}`;
+        jpgPage = `${jpgPolicyAPI}${num}`;
         jpgResponse = await fetch(jpgPage);
         jpgData = await jpgResponse.json();
         exactMatch = result.find(exact => exact.score === 0)

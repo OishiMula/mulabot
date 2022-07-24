@@ -1,4 +1,4 @@
-const extrasPath = '/home/pi/projects/js/mula_bot/extras/';
+const extrasPath = './extras/';
 const randomFile = require('select-random-file');
 
 module.exports = {

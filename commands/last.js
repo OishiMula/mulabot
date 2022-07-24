@@ -4,7 +4,7 @@ const {
 const ordinal = require('ordinal')
 const dayjs = require('dayjs')
 const relativeTime = require('dayjs/plugin/relativeTime')
-const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
+const mulaFN = require('../mula_functions');
 dayjs.extend(relativeTime);
 
 module.exports = {

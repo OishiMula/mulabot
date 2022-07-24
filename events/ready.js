@@ -1,7 +1,7 @@
 const fs = require('node:fs');
-const extrasPath = '/home/pi/projects/js/mula_bot/extras/'
-const mulaFN = require('/home/pi/projects/js/mula_bot/mula_functions.js');
-const epochFile = '/home/pi/projects/js/mula_bot/extras/epoch.txt'
+const extrasPath = './extras/';
+const mulaFN = require('../mula_functions');
+const epochFile = './extras/epoch.txt'
 
 module.exports = {
   name: 'ready',
