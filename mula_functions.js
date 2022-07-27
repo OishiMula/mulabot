@@ -71,6 +71,7 @@ const SHORTCUTS = {
   "mdcc": "maddogcarclub",
   "mek": "mekanism",
   "pxlz": "deadpxlz",
+  "sac": "spaceapeclub",
   "soho": "soho kids",
   "unsigs": "unsigned_algorithms",
   "vox kongs": "boss planet vox kongs",
@@ -99,6 +100,8 @@ const ERROR_SAYINGS = [
   "NOPE.",
   "so sorry oh well",
   "and i don't care",
+  "ummmm, wat?",
+  "anyway.. try again!",
 ]
 
 module.exports = {
@@ -131,41 +134,52 @@ module.exports.download = async function (data, type) {
     }
 
     case 'project': {
-      // Set up Fuse options to search jpg.store
+      // Set up Fuse options to typos/fuzzy search
       const options = {
         keys: ['url', 'display_name', 'policy_id'],
-        threshold: 0.3,
+        threshold: 0.2,
+        distance: 0,
         includeScore: true,
-        findAllMatches: true,
-        shouldSort: true,
-        useExtendedSearch: true
       };
 
-      let jpgPage, jpgResponse, jpgData, exactMatch, fuse;
+      const exactOptions = {
+        keys: ['url', 'display_name', 'policy_id'],
+        useExtendedSearch: true,
+        includeScore: true,
+      }
+
+      // variables to begin the jpg store search
+      let jpgPage, jpgResponse, jpgData, match, fuzzymatch, fuse, exactFuse;
       let result = [];
-      let blacklistWords = ["Exclusives"];
 
       for (let num = 1;; num += 1) {
+        // Retrieving data from jpg store, page by page
         jpgPage = `${jpgPolicyAPI}${num}`;
         jpgResponse = await fetch(jpgPage);
         jpgData = await jpgResponse.json();
-        exactMatch = result.find(exact => exact.score === 0)
 
         if (jpgData.length > 0) {
+          // set up fuzzy searches for typos
           fuse = new Fuse(jpgData, options);
-          result.push(fuse.search(`${data} !${blacklistWords}`));
+          exactFuse = new Fuse(jpgData, exactOptions);
 
+          // check to see if there is an exact match, return immediately
+          match = exactFuse.search(`=${data}`);
+          if (match.length > 0) return match[0].item
+
+          // if no exact match, store results in array then flatten
+          result.push(fuse.search(data));
+          result = result.flat();
+
+          // no more results from jpg
           if (result.length === 0) continue;
-          else {
-            result = result.flat();
-            for (let exact in result)
-              if (result[exact].score.toString().includes('e') || result[exact].score < 0.0002) result[exact].score = 0;
-            continue;
-          }
         } else {
+          // no results found
           if (result.length === 0) return "error";
-          if (exactMatch) return exactMatch.item;
-          return (result[0].item);
+
+          // sort the list by score
+          fuzzymatch = result.reduce((prev, curr) => prev.score < curr.score ? prev : curr);
+          return (fuzzymatch.item);
         }
       }
     }
@@ -255,4 +269,9 @@ module.exports.createMsg = async function (payload) {
 module.exports.choose = function (choices) {
   var index = Math.floor(Math.random() * choices.length);
   return choices[index];
+}
+
+const DEF_DELAY = 1000;
+module.exports.sleep = function (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms || DEF_DELAY));
 }
