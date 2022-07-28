@@ -15,10 +15,15 @@ const twitterReacts = [
   'a:sirengreen:944494579770593290', 
   'a:sirenpurple:944494579544117279', 
   'a:sirenred2:944494548325912617'
-]
+];
 
 // Twitter prefix message
-const newTweet = '**NEW FIRE POSTED BY:**'
+const newTweet = '**NEW FIRE POSTED BY:**';
+
+// Commands sent silently
+const ephemeralCommands = [
+	'shorts', 'wtf', 'msg'
+];
 
 // Bot Icon URL
 const botIcon = process.env.MULA_BOT_IMAGE;
@@ -31,5 +36,6 @@ module.exports = {
   twitterAltUserId,
   twitterReacts,
   newTweet,
+  ephemeralCommands,
   botIcon,
 };

@@ -8,6 +8,7 @@ pm2 start index.js --name mulabot --log-date-format "MM-DD | hh:mm:ss a"
 const fs = require('node:fs');
 const path = require('path');
 const mulaFN = require('./mula_functions');
+const config = require('./config/config')
 const secrets = require('./config/secrets')
 
 // Create Discord client Instance
@@ -21,11 +22,6 @@ discordIntents.add(Intents.FLAGS.GUILDS,
 const client = new Client({
 	intents: discordIntents
 });
-
-// Commands sent silently
-const ephemeralCommands = [
-	'shorts', 'wtf', 'msg'
-];
 
 // To load commands
 client.commands = new Collection();
@@ -60,7 +56,7 @@ client.on('interactionCreate', async interaction => {
 	const t0 = performance.now();
 
 	// If it's a command that needs to be sent quietly, else do a regular command
-	if (ephemeralCommands.includes(interaction.commandName)) {
+	if (config.ephemeralCommands.includes(interaction.commandName)) {
 		await interaction.deferReply({
 			interaction,
 			ephemeral: true
@@ -88,5 +84,4 @@ client.login(secrets.botToken);
 TODO: mmm mode / party mode
 TODO: toke
 TODO: 0verdrips connect to jpg store
-TODO: multiple servers
 */

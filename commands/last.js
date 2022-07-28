@@ -49,7 +49,6 @@ module.exports = {
 			thumbnail: `${api.ipfsBase}${imgURL}`
 		}
 
-
 		const embed = await mulaFN.createMsg(msgPayload);
 
 		await interaction.editReply({

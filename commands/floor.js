@@ -30,7 +30,6 @@ module.exports = {
 		const jpgFloorJ = await mulaFN.download(`${api.jpgCollection}${project.policy_id}/floor`, 'data');
 		const floorPrice = String(jpgFloorJ.floor / 1000000);
 
-
 		msgPayload = {
 			title: 'Floor',
 			source: 'jpg',
