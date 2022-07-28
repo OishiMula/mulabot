@@ -2,6 +2,7 @@ const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
 const mulaFN = require('../mula_functions');
+const config = require('../config/config');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -23,7 +24,7 @@ module.exports = {
       **/shorts** --> Shows your shortcuts available for projects / tokens
       **/vibe** --> When you just need to vibe a bit
       **/wtf** --> This command`,
-      thumbnail: `${mulaFN.MULA_BOT_IMG}`
+      thumbnail: `${config.botIcon}`
     }
 
     const embed = await mulaFN.createMsg(msgPayload);

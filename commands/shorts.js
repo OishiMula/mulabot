@@ -2,6 +2,7 @@ const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
 const mulaFN = require('../mula_functions');
+const config = require('../config/config');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -15,12 +16,13 @@ module.exports = {
       return msg;
     }
 
+
     const msgPayload = {
       title: 'Shortcuts',
       source: "Mula Bot",
       header: "Shortcuts available",
       content: shortsMsg(),
-      thumbnail: `${mulaFN.MULA_BOT_IMG}`
+      thumbnail: `${config.botIcon}`
     }
 
     const embed = await mulaFN.createMsg(msgPayload);

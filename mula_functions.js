@@ -1,23 +1,13 @@
-require('dotenv').config();
 const fs = require('fs');
-const {
-  MessageEmbed
-} = require('discord.js');
+const {MessageEmbed} = require('discord.js');
 const Blockfrost = require('@blockfrost/blockfrost-js');
 const Fuse = require('fuse.js');
+const secrets = require('./config/secrets');
+const api = require('./config/api');
+const config = require('./config/config');
 
-// API Endpoints
-const jpgCollectionAPI = 'https://server.jpgstoreapis.com/collection/';
-const jpgPolicyAPI = 'https://server.jpgstoreapis.com/policy/verified?page=';
-const jpgStoreLink = 'https://www.jpg.store/collection/';
-const opencnftPolicyAPI = 'https://api.opencnft.io/1/policy/';
-const openSeaAPI = 'https://api.opensea.io/api/v1/collection/';
-const ipfsBase = 'https://infura-ipfs.io/ipfs/';
-const MULA_BOT_IMG = 'https://bafybeidb6f5rr27no5ghctfbac4zktulwa4ku6rfhuardx3iwu7cvocl4q.ipfs.infura-ipfs.io/';
-const jpgStoreLogo = 'QmbbfCQQBuVcWkX7hJ23LVNgoXRQi4mAVzT92mmcwBvqFF';
-
-const API = new Blockfrost.BlockFrostAPI({
-  projectId: `${process.env.BLOCKFROST_TOKEN}`
+const blockfrostAPI = new Blockfrost.BlockFrostAPI({
+  projectId: secrets.blockfrostToken
 });
 
 const CREW = {
@@ -64,6 +54,7 @@ const SHORTCUTS = {
   "drapes": "derpapes",
   "gcclays": "clay nation x good charlotte",
   "havoc": "havocworlds",
+  "hoppers": "happy hoppers club",
   "htc": "happytigersclub",
   "hw": "havoc worlds",
   "knfty": "knftyworldknftycreatures",
@@ -105,16 +96,9 @@ const ERROR_SAYINGS = [
 ]
 
 module.exports = {
-  jpgCollectionAPI,
-  jpgPolicyAPI,
-  jpgStoreLink,
-  opencnftPolicyAPI,
-  openSeaAPI,
-  ipfsBase,
   CREW,
   SHORTCUTS,
   SHORTCUTS_ETH,
-  MULA_BOT_IMG,
   ERROR_SAYINGS,
 }
 
@@ -127,9 +111,10 @@ module.exports.download = async function (data, type) {
       return await response.json();
 
     case 'thumbnail': {
+      //TODO: retry loop
       response = await fetch(data);
       let imgJ = await response.json();
-      if (typeof (imgJ.thumbnail) !== 'string') return jpgStoreLogo;
+      if (typeof (imgJ.thumbnail) !== 'string') return api.jpgStoreLogo;
       return imgJ.thumbnail.slice(7);
     }
 
@@ -154,7 +139,7 @@ module.exports.download = async function (data, type) {
 
       for (let num = 1;; num += 1) {
         // Retrieving data from jpg store, page by page
-        jpgPage = `${jpgPolicyAPI}${num}`;
+        jpgPage = `${api.jpgPolicy}${num}`;
         jpgResponse = await fetch(jpgPage);
         jpgData = await jpgResponse.json();
 
@@ -195,7 +180,7 @@ module.exports.download = async function (data, type) {
     }
 
     case 'epoch': {
-      const latestEpoch = await API.epochsLatest();
+      const latestEpoch = await blockfrostAPI.epochsLatest();
       const epoch = {
         current: latestEpoch.epoch,
         end: latestEpoch.end_time
@@ -217,7 +202,7 @@ module.exports.download = async function (data, type) {
 module.exports.createMsg = async function (payload) {
   const author = {
     name: 'Mula Bot - Degens Den Servant',
-    iconURL: `${MULA_BOT_IMG}`
+    iconURL: config.botIcon
   }
 
   let footer;
@@ -264,6 +249,15 @@ module.exports.createMsg = async function (payload) {
     .addField(payload.header, payload.content);
 
   return newMessage;
+}
+
+module.exports.shortcutCheck = function (project) {
+  if (project in SHORTCUTS) return SHORTCUTS[project];
+  else return project;
+}
+
+module.exports.crewCheck = function (homie) {
+  if (homie in CREW) return true;
 }
 
 module.exports.choose = function (choices) {

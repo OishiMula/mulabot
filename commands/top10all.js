@@ -1,18 +1,16 @@
-const {
-  SlashCommandBuilder
-} = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 const mulaFN = require('../mula_functions');
+const api = require('../config/api');
 const ordinal = require('ordinal');
-const {
-  millify
-} = require("millify");
+const { millify } = require("millify");
+const { config } = require('dotenv');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('top10all')
     .setDescription('Retrieve the Top 10 projects today on OpenCNFT'),
   async execute(interaction) {
-    const opencnftData = await mulaFN.download('https://api.opencnft.io/1/rank?window=24h', 'data');
+    const opencnftData = await mulaFN.download(api.opencnftTopDaily, 'data');
     const top10Today = await opencnftData['ranking'].slice(0, 10);
 
     function saleMsg(sale) {
@@ -26,9 +24,9 @@ module.exports = {
     const msgPayload = {
       title: 'Top 10 All',
       source: 'opencnft',
-      header: "Project Name - 24Hr Volume - Floor Price",
+      header: "Project Name | 24Hr Volume | Floor Price",
       content: saleMsg(top10Today),
-      thumbnail: `${mulaFN.MULA_BOT_IMG}`
+      thumbnail: config.botIcon
     }
 
     const embed = await mulaFN.createMsg(msgPayload);

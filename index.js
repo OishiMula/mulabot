@@ -1,22 +1,17 @@
 /* Mula Bot - Revamped in Node.js!
 Created by Oishi Mula, 5/1/2022 
 pm2 Timestamp / add entry:
-pm2 start index.js --name MulaBot --log-date-format "MM-DD | hh:mm:ss a"
+pm2 start index.js --name mulabot --log-date-format "MM-DD | hh:mm:ss a"
 */
 
 // Add required libs
-require('dotenv').config();
 const fs = require('node:fs');
 const path = require('path');
-const token = process.env.MULA_TOKEN;
 const mulaFN = require('./mula_functions');
+const secrets = require('./config/secrets')
 
 // Create Discord client Instance
-const {
-	Client,
-	Collection,
-	Intents
-} = require('discord.js');
+const {Client,Collection,Intents} = require('discord.js');
 const discordIntents = new Intents();
 discordIntents.add(Intents.FLAGS.GUILDS,
 	Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
@@ -87,10 +82,11 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-client.login(token);
+client.login(secrets.botToken);
 
 /* Personal Todo list:
 TODO: mmm mode / party mode
 TODO: toke
 TODO: 0verdrips connect to jpg store
+TODO: multiple servers
 */

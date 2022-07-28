@@ -1,12 +1,20 @@
 const extrasPath = './extras/';
+const config = require('../config/config');
 const randomFile = require('select-random-file');
 
 module.exports = {
   name: 'messageCreate',
   execute(message) {
-    //if (message.content.toLowerCase() === 'test') console.log(message);
-
     if (message.author.bot) return;
+
+    // Twitter Function
+    // This will retrieve messages that include a tweet link, add fun reacts, and repost it in a separate channel
+    // There is an option for secondary post to go to a specific channel (ie, admin posting tweets)
+    if (message.content.toLowerCase().includes('https://twitter.com') || message.content.toLowerCase().includes('https://www.twitter.com')) {
+      if (message.author.id === config.twitterAltUserId) message.client.channels.cache.get(config.twitterAltChannel).send(`${config.newTweet} ${message.author.username}\n${message.content}`);
+      else message.client.channels.cache.get(config.twitterChannel).send(`${config.newTweet} ${message.author.username}\n${message.content}`);
+      config.twitterReacts.forEach(reaction => message.react(reaction)); 
+    }
 
     // Plxce Beats
     if (message.content.toLowerCase() === "drop the beat") {
@@ -48,7 +56,7 @@ module.exports = {
     }
 
     // real kong shit
-    if (message.content.toLowerCase().includes('real kong shit')) {
+    if (message.content.toLowerCase().includes('real kong shit') || message.content.toLowerCase().includes(':harambehorny:')) {
       console.log(`Command: Real kong shit -- ${message.author.tag}`)
       message.channel.send({
         files: [{
