@@ -84,4 +84,5 @@ client.login(secrets.botToken);
 TODO: mmm mode / party mode
 TODO: toke
 TODO: 0verdrips connect to jpg store
+TODO: button for hype
 */

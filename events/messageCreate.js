@@ -1,10 +1,29 @@
 const extrasPath = './extras/';
 const config = require('../config/config');
+const secrets = require('../config/secrets')
 const randomFile = require('select-random-file');
+
+const Tenor = require("tenorjs").client({
+  "Key": `${secrets.tenorToken}`, 
+  "Filter": "off", 
+  "Locale": "en_US",
+  "MediaFilter": "gif",
+  "DateFormat": "MM/D/YYYY - H:mm:ss A"
+});
 
 module.exports = {
   name: 'messageCreate',
-  execute(message) {
+  async execute(message) {
+    // Epoch Function -- Uses Blockfrost Secure Webhooks
+    if (message.webhookId) {
+      const annoucementChannel = await message.client.channels.cache.get(config.annoucementChannel);
+      let epochData = await JSON.parse(message.content);
+annoucementChannel.send(`@everyone
+<a:sirenred:944494985288515644> **A NEW EPOCH HAS BEGUN!** <a:sirenred:944494985288515644>
+We are now on **Epoch ${epochData.payload.current_epoch.epoch}** 
+Don't forget your Dripdropz at https://dripdropz.io/`);
+    }
+    
     if (message.author.bot) return;
 
     // Twitter Function
@@ -30,6 +49,37 @@ module.exports = {
           }
         ]
       });
+    }
+
+    // Random gifs
+    if (config.randomGifs.includes(message.content.toLowerCase())) {
+      let searchQuery = message.content.toLowerCase();
+      // Quick fixes for certain terms
+      switch (searchQuery) {
+        case 'bull':
+        case 'bear':
+          searchQuery = 'crypto';
+          break;
+        case 'ginger':
+        case 'gingers':
+          searchQuery = 'rip';
+          break;
+        case 'ups':
+        case 'shillington':
+          searchQuery = 'ups delivery';
+          break;
+        case 'degen':
+          searchQuery = 'degen';
+          break;
+        default:
+          break;
+      }
+
+      Tenor.Search.Query(searchQuery, "50").then(results => {
+        const randomGif = results[Math.floor(Math.random() * results.length)];
+        message.channel.send(randomGif.url);
+      })
+      console.log(`Command: ${message.content} -- ${message.author.tag}`)
     }
 
     // Sheesh
@@ -77,6 +127,21 @@ module.exports = {
       });
     }
 
+    // mini messi
+    if (message.content.toLowerCase() === "mini messi") {
+      console.log(`Command: Mini Messi -- ${message.author.tag}`)
+      const minimessiDir = `${extrasPath}/messi`
+      randomFile(minimessiDir, (Err, minimessiGif) => {
+        message.channel.send({
+          files: [{
+            attachment: `${minimessiDir}/${minimessiGif}`,
+            name: `minimessi.gif`
+          }]
+        });
+      });
+    }
+
+    /* REMOVE SOON:
     // Jimmy 
     if (message.content.toLowerCase().split(" ").includes('jimmy')) {
       console.log(`Command: Jimmy -- ${message.author.tag}`)
@@ -191,18 +256,6 @@ module.exports = {
       });
     }
 
-    // mini messi
-    if (message.content.toLowerCase().split(" ").includes("mini messi") || message.content.toLowerCase().split(" ").includes('messi')) {
-      console.log(`Command: Messi -- ${message.author.tag}`)
-      const minimessiDir = `${extrasPath}/messi`
-      randomFile(minimessiDir, (Err, minimessiGif) => {
-        message.channel.send({
-          files: [{
-            attachment: `${minimessiDir}/${minimessiGif}`,
-            name: `minimessi.gif`
-          }]
-        });
-      });
-    }
+  */
   }
 }

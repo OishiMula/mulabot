@@ -14,10 +14,13 @@ const discordGuildIds = {
 // Blockfrost Token
 const blockfrostToken = process.env.BLOCKFROST_TOKEN;
 
+// Tenor Token
+const tenorToken = process.env.TENOR_TOKEN;
 
 module.exports = {
   botToken,
   botClientId,
   discordGuildIds,
   blockfrostToken,
+  tenorToken
 }

@@ -1,4 +1,5 @@
 const {	SlashCommandBuilder } = require('@discordjs/builders');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const mulaFN = require('../mula_functions');
 const api = require('../config/api');
 
@@ -9,7 +10,7 @@ module.exports = {
 		.addStringOption(option => option.setName('project').setDescription('Enter a project name').setRequired(true)),
 	async execute(interaction) {
 		let projectName = interaction.options.getString('project').toLowerCase();
-		let msgPayload;
+		let msgPayload, row;
 
 		// crew check - fun sayings
 		if (mulaFN.crewCheck(projectName)) {
@@ -39,11 +40,37 @@ module.exports = {
 			thumbnail: `${api.ipfsBase}${imgURL}`
 		}
 
-		const embed = await mulaFN.createMsg(msgPayload);
+		if (floorPrice < 5) {
+			// Hype button 
+			row = new ActionRowBuilder()
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId('hype')
+						.setLabel('hype me up')
+						.setStyle(ButtonStyle.Primary),
+			);
+			
+			interaction.client.on('clickButton', async (button) => {
+				if (button.id === 'hype') 
+					button.reply.send('test');
+	})
 
-		await interaction.editReply({
-			embeds: [embed]
-		});
+		}
+
+		const embed = await mulaFN.createMsg(msgPayload);
+		
+		if (row) {
+			await interaction.editReply({
+				embeds: [embed],
+				components: [row],
+			});
+		}
+		else {
+			await interaction.editReply({
+				embeds: [embed]
+			});
+		}
+
 		return project.display_name;
 	},
 };

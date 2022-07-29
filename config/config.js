@@ -3,7 +3,7 @@ require('dotenv').config();
 const ownerId = '374929603594027018';
 
 // Discord Channels
-const ANNOUNCEMENT_CHANNEL = '941428920488718406';
+const annoucementChannel = '941428920488718406';
 const twitterChannel = '944095401194172427';
 const twitterAltChannel = '941847130983759872';
 const twitterAltUserId = '503807404648038410';
@@ -17,12 +17,30 @@ const twitterReacts = [
   'a:sirenred2:944494548325912617'
 ];
 
+// Gif Trigger Words
+const randomGifs = [
+  'jimmy',
+  'degen',
+  'cardano',
+  'crypto',
+  'bear',
+  'bull',
+  'rip',
+  'ginger',
+  'gingers',
+  'solana',
+  'shillington',
+  'ups',
+  'here we go',
+  'messi'
+]
+
 // Twitter prefix message
 const newTweet = '**NEW FIRE POSTED BY:**';
 
 // Commands sent silently
 const ephemeralCommands = [
-	'shorts', 'wtf', 'msg'
+	'shorts', 'wtf', 'mulamsg'
 ];
 
 // Bot Icon URL
@@ -30,11 +48,12 @@ const botIcon = process.env.MULA_BOT_IMAGE;
 
 module.exports = {
   ownerId,
-  ANNOUNCEMENT_CHANNEL,
+  annoucementChannel,
   twitterChannel,
   twitterAltChannel,
   twitterAltUserId,
   twitterReacts,
+  randomGifs,
   newTweet,
   ephemeralCommands,
   botIcon,

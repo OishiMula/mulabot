@@ -19,7 +19,8 @@
     "fuse.js": "^6.6.2",
     "millify": "^4.0.0",
     "ordinal": "^1.0.3",
-    "select-random-file": "^1.2.1"
+    "select-random-file": "^1.2.1",
+    "tenorjs": "^1.0.8"
   },
   "devDependencies": {
     "eslint": "^8.20.0",
