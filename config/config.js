@@ -3,7 +3,7 @@ require('dotenv').config();
 const ownerId = '374929603594027018';
 
 // Discord Channels
-const annoucementChannel = '941428920488718406';
+const annoucementChannel = '941434566697164901';
 const twitterChannel = '944095401194172427';
 const twitterAltChannel = '941847130983759872';
 const twitterAltUserId = '503807404648038410';

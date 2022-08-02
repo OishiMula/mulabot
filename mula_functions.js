@@ -112,8 +112,16 @@ module.exports.download = async function (data, type) {
 
     case 'thumbnail': {
       //TODO: retry loop
+      let imgJ
       response = await fetch(data);
-      let imgJ = await response.json();
+      
+      try {
+        imgJ = await response.json();
+      } catch(error) {
+        console.error(`Error: Image download.\nError: ${error}\nPayload: ${data}`)
+        return api.jpgStoreLogo;
+      }
+      
       if (typeof (imgJ.thumbnail) !== 'string') return api.jpgStoreLogo;
       return imgJ.thumbnail.slice(7);
     }

@@ -1,6 +1,4 @@
-const {
-  SlashCommandBuilder
-} = require('@discordjs/builders');
+const {SlashCommandBuilder} = require('@discordjs/builders');
 const mulaFN = require('../mula_functions');
 const config = require('../config/config');
 
@@ -15,7 +13,6 @@ module.exports = {
       for (let [key, value] of Object.entries(mulaFN.SHORTCUTS))  msg += `${key} -- ${value}\n`;
       return msg;
     }
-
 
     const msgPayload = {
       title: 'Shortcuts',

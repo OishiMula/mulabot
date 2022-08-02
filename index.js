@@ -85,4 +85,6 @@ TODO: mmm mode / party mode
 TODO: toke
 TODO: 0verdrips connect to jpg store
 TODO: button for hype
+TODO: Project lookup, ignore articles (the, a, an)
+TODO: holder roles based off reacts
 */

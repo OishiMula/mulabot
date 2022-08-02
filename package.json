@@ -1,6 +1,6 @@
 {
   "name": "mula_bot",
-  "version": "0.7.5",
+  "version": "0.7.9",
   "description": "Mula Bot - For Discord!",
   "main": "index.js",
   "scripts": {
@@ -12,19 +12,38 @@
     "@blockfrost/blockfrost-js": "^4.2.0",
     "@discordjs/builders": "^0.13.0",
     "@discordjs/rest": "^0.4.1",
+    "@keyv/redis": "^2.3.9",
+    "cron": "^2.1.0",
     "dayjs": "^1.11.4",
     "discord-api-types": "^0.32.0",
-    "discord.js": "^13.6.0",
-    "dotenv": "^16.0.0",
+    "discord.js": "^13.9.2",
+    "dotenv": "^16.0.1",
     "fuse.js": "^6.6.2",
-    "millify": "^4.0.0",
+    "keyv": "^4.3.3",
+    "millify": "^4.0.1",
+    "node-cron": "^3.0.1",
     "ordinal": "^1.0.3",
     "select-random-file": "^1.2.1",
-    "tenorjs": "^1.0.8"
+    "tenorjs": "^1.0.8",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "eslint": "^8.20.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.26.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OishiMula/js-mula-bot.git"
+  },
+  "keywords": [
+    "cnft",
+    "nft",
+    "discord",
+    "fun"
+  ],
+  "bugs": {
+    "url": "https://github.com/OishiMula/js-mula-bot/issues"
+  },
+  "homepage": "https://github.com/OishiMula/js-mula-bot#readme"
 }
