@@ -68,13 +68,13 @@ client.on('interactionCreate', async interaction => {
 
 	try {
 		if (userInput[0] === undefined) userInput = 'n/a';
-		if (userInput[0] === 'error') throw 'error'
+		if (userInput[0] === 'error') throw new Error();
 		const t1 = performance.now();
 		console.log(`Command: ${interaction.commandName} - ${userInput} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`)
 	} catch (error) {
 		const t1 = performance.now();
 		await interaction.editReply(`I couldn't find ${userInput[1]} -- ${mulaFN.choose(mulaFN.ERROR_SAYINGS)}`);
-		console.error(`ERROR: Command: ${interaction.commandName} - ${userInput[1]} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`);
+		console.error(`ERROR: ${interaction.commandName} - ${userInput[1]} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`);
 	}
 });
 
