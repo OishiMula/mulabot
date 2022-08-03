@@ -15,6 +15,22 @@ module.exports = {
   async execute (client) {
     console.log("Mula Bot Starting ...");
 
+    // Testing ReactionsRole Code
+    // Fetch the message that is awaiting reacts
+    const { ReactionRole } = require("discordjs-reaction-role");
+    let reactMsg = '1003868951681450115';
+    let emojiRoles = ['🌞', '🐇', '⚔️', '🐱', '🦉', '👻', '🍪'];
+
+    const reactionRoles = new ReactionRole(client, [
+      { messageId: reactMsg, reaction: "🌞", roleId: "986823055756111963" },
+      { messageId: reactMsg, reaction: "🐇", roleId: "984073693770707025" },
+      { messageId: reactMsg, reaction: "⚔️", roleId: "984073414270656523" },
+      { messageId: reactMsg, reaction: "🐱", roleId: "960438256535752755" },
+      { messageId: reactMsg, reaction: "🦉", roleId: "1001688915863937114" },
+      { messageId: reactMsg, reaction: "👻 ", roleId: "991135538876776518" },
+      { messageId: reactMsg, reaction: "🍪", roleId: "978825307136081951" },
+    ]);
+    
     // * Epoch Countdown *
     // Check to see if epoch data exist
     if (!await keyv.get('epoch')) {

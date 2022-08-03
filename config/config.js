@@ -40,7 +40,7 @@ const newTweet = '**NEW FIRE POSTED BY:**';
 
 // Commands sent silently
 const ephemeralCommands = [
-	'shorts', 'wtf', 'mulamsg'
+	'shorts', 'wtf', 'mulamsg', 'admin'
 ];
 
 // Bot Icon URL
