@@ -8,7 +8,6 @@ const keyv = new Keyv('redis://localhost:6379/0');
 keyv.on('error', err => console.error('ERROR: Keyv connection error:', err));
 let epochData;
 
-
 module.exports = {
   name: 'ready',
   once: true,
@@ -40,7 +39,7 @@ module.exports = {
     }
 
     // Scheduled task to check epoch - Main Logic
-    cron.schedule('* */15 * * * *', async () => {
+    cron.schedule('* */30 * * * *', async () => {
         let epoch = await keyv.get('epoch');
         let now = new Date().getTime();
 
@@ -50,10 +49,14 @@ module.exports = {
 
         if (Number(nowCompare) > Number(epochCompare)) {
           let epochNew = await mulaFN.download('null', 'epoch');
+          // Sometimes Blockfrost takes a bit to update.
+          if (epoch.current === epochNew.current) {
+            console.log('same- done.')
+            return;
+          }
           await keyv.set('epoch', epochNew);
           const annoucement = client.channels.cache.get(config.annoucementChannel);
-          console.log(`Info: New Epoch -- Epoch ${epochNew.current}`);
-          await annoucement.send(`everyone
+          await annoucement.send(`@everyone
 <a:sirenred:944494985288515644> **A NEW EPOCH HAS BEGUN!** <a:sirenred:944494985288515644>
 We are now on **Epoch ${epochNew.current}** 
 Don't forget your Dripdropz at https://dripdropz.io/`);
