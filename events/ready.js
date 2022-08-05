@@ -6,7 +6,7 @@ const cron = require('node-cron');
 const Keyv = require('keyv');
 const keyv = new Keyv('redis://localhost:6379/0');
 keyv.on('error', err => console.error('ERROR: Keyv connection error:', err));
-let epochData;
+const { ReactionRole } = require("discordjs-reaction-role");
 
 module.exports = {
   name: 'ready',
@@ -14,19 +14,33 @@ module.exports = {
   async execute (client) {
     console.log("Mula Bot Starting ...");
 
-    // Testing ReactionsRole Code
-    // Fetch the message that is awaiting reacts
-    const { ReactionRole } = require("discordjs-reaction-role");
-    let reactMsg = '1003868951681450115';
-    let emojiRoles = ['🌞', '🐇', '⚔️', '🐱', '🦉', '👻', '🍪'];
+    // ReactionsRole Code
+    // This following code creates a new ReactionRole message
+   /* const newMsg = `Holder Roles - React to Add/Remove
+Melting Moonboy - 🌞 
+DRRS - 🐇 
+Tavern Squad - ⚔️ 
+Gutter Clone - 🐱 
+Blockowls - 🦉 
+Clumsy Ghosts - 👻 
+Gingerbread Squad - 🍪`;
+  let emojiRoles = ['🌞', '🐇', '⚔️', '🐱', '🦉', '👻', '🍪'];
 
+    const roleChannel = client.channels.cache.get('941434790861754439');
+    const reactMsg = await roleChannel.send(newMsg);
+    for (let emoji in emojiRoles) reactMsg.react(emojiRoles[emoji]);
+    console.log(reactMsg.id);
+    await keyv.set('rolesmsg', reactMsg);
+*/
+
+    const reactMsg = '1004974668912009327';
     const reactionRoles = new ReactionRole(client, [
       { messageId: reactMsg, reaction: "🌞", roleId: "986823055756111963" },
       { messageId: reactMsg, reaction: "🐇", roleId: "984073693770707025" },
       { messageId: reactMsg, reaction: "⚔️", roleId: "984073414270656523" },
       { messageId: reactMsg, reaction: "🐱", roleId: "960438256535752755" },
       { messageId: reactMsg, reaction: "🦉", roleId: "1001688915863937114" },
-      { messageId: reactMsg, reaction: "👻 ", roleId: "991135538876776518" },
+      { messageId: reactMsg, reaction: "👻", roleId: "991135538876776518" },
       { messageId: reactMsg, reaction: "🍪", roleId: "978825307136081951" },
     ]);
     

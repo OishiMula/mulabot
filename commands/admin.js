@@ -32,7 +32,7 @@ module.exports = {
 					subcommand
 						.setName('setup')
 						.setDescription("Set up Reaction Roles")
-						.addStringOption(option => option.setName('setup').setDescription("N/A").setRequired(true))
+						.addBooleanOption(option => option.setName('setup').setDescription("N/A").setRequired(true))
 				)
 				.addSubcommand(subcommand =>
 					subcommand
@@ -50,87 +50,88 @@ module.exports = {
 				.addStringOption(option => option.setName('editmsg').setDescription("Provide the new message to enter").setRequired(true))
 		),
 	async execute(interaction) {
-		if (interaction.user.id !== '374929603594027018') await interaction.editReply({content: `You ain't oishi, shoo.`,ephemeral: true});
+		// TODO: Fix this soon
+		let allowed = ['374929603594027018', '365119859568148481'];
+		if (!allowed.includes(interaction.user.id)) await interaction.editReply(`You ain't oishi, shoo.`);
+		//if (interaction.user.id !== '374929603594027018') await interaction.editReply({content: `You ain't oishi, shoo.`,ephemeral: true});
 		
 		else {
-			let newname, newstatus, setup, edit, messageId, msgchannel, message;
+			let newname, newstatus, msgid, rrsetup;
 			try { newname = interaction.options.getString('newname') } catch(error) { newname = " "; }
 			try { newstatus = interaction.options.getString('newstatus') } catch(error) { newstatus = " "; }
 			try { msgid = interaction.options.getString('msgid') } catch(error) { msgid = " "; }
+			try { rrsetup = interaction.options.getBoolean('setup') } catch(error) { rrsetup = false }
+			console.log(rrsetup);
 	
 			if (newname !== null) {
-				await interaction.editReply({
-					content: `Setting name as **${newname}**`,
-					ephemeral: true
-				});
-				console.log(`INFO: New status: ${newname}`)
+				await interaction.editReply(`Setting name as **${newname}**`);
+				console.log(`INFO: New name: ${newname}`)
 				interaction.client.user.setUsername(newname);
 			}
 
 			if (newstatus !== null) {
 				// TODO: Add type
-				await interaction.editReply({
-					content: `Setting status as Playing **${newstatus}**`,
-					ephemeral: true
-				});
-				console.log(`Info: New status: ${newstatus}`)
+				await interaction.editReply(`Setting status as Playing **${newstatus}**`);
+				console.log(`Info: New status: ${newstatus}`);
 				interaction.client.user.setActivity(newstatus);
 			}
 			
 			if (msgid !== null) {
-				message = interaction.options.getString('editmsg');
-				msgChannel = interaction.options.getString('chan');
+				let message = interaction.options.getString('editmsg');
+				let msgChannel = interaction.options.getString('chan');
+				let oldMessage;
 				
-				/* -- not retrieving channel properly
-				channelData = interaction.channels.cache.get(msgchannel);
-				console.log(channelData);
-				let oldMessage = channelData.messages.cache.get(msgid);
-
-				console.log(oldMessage);
+				// retrieve older message
+				try {
+					channelData = await interaction.client.channels.cache.find(channelList => channelList.id === msgChannel);
+					oldMessage = await channelData.messages.fetch(msgid);
+				} catch (error) {
+					await interaction.editReply(`Error: Please check the ChannelID and MessageId`);
+					return "error";
+				}
+				
+				if (!oldMessage.author.bot) {
+					await interaction.editReply(`Error: Please check the MessageID`);
+					return "error";
+				}
+				
 				oldMessage.edit(message);
+				await interaction.editReply(`Editing messageID: **${msgid}**`);
 
-				await interaction.editReply({
-					content: `Editing messageID: ${messageId}**`,
-					ephemeral: true
-				});
 				console.log(`INFO: Edit on ${msgid} with: ${message}`)
 				return "Edit Mula Msg"
-				*/
-				// TODO: fix up with better validation
-				// pick a channel, enter a message id
-
-				
-
-				/*
-				await interaction.followUp('Please enter the #Channel name');
-				if (interaction.user.id === '374929603594027018') {
-					let channelName = interaction.client.message.content;
-					console.log(channelName);
 				}
-				*/
 
-					//let channelName = await interaction.channel.awaitMessageComponent({ filter, max: 1 });
-					//console.log(channelName);
-					
-					//let reactChannel = client.channels.cache.get('941434566697164901')
-					//let reactMsg = await client.channels.cache.get('941434566697164901').messages.fetch('1003868951681450115');
+			// Reaction Roles
+			if (rrsetup === true) {
+				await interaction.editReply("Starting collection");
+				const filter = m => m.author.id.includes(interaction.user.id);
+				const collector = interaction.channel.createMessageCollector({ filter, max: 10, dispose: true })
+				let reactRoles = [];
+
+				collector.on('collect', m => { 
+					console.log('ding');
+					if (m.content === 'end') {
+						collector.dispose(m);
+						collector.stop();
+					}
+				});
+
+				collector.on('end', collected => {
+					collected.forEach(message => {
+						if (message.content === 'end') return;
+							reactRoles.push(message.content.split(" "));
+						})
+						
+						// Left off here, figure out how to dynamically add "reaction roles"
+						for (message in reactRoles) {
+							console.log(reactRoles[message][0]);
+						}
+						console.log(reactRoles);
+				});
+			}
 			
-				}
 		}
-
-		/*
-		try {
-			newName = interaction.options.getString('name');
-		} catch (error) {
-			newName = 0;
-		}
-		try {
-			newStatus = interaction.options.getString('status');
-		} catch (error) {
-			newStatus = 0;
-		}
-*/
-
 		return "Done";
 	}
 }

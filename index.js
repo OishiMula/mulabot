@@ -56,6 +56,11 @@ client.on('interactionCreate', async interaction => {
 	// Start a timer to see how long the command takes
 	const t0 = performance.now();
 
+	// Quickhack for Multimsg
+	if (interaction.commandName === 'mulamsgmulti') {
+		await command.execute(interaction);
+	}
+
 	// If it's a command that needs to be sent quietly, else do a regular command
 	if (config.ephemeralCommands.includes(interaction.commandName)) {
 		await interaction.deferReply({
