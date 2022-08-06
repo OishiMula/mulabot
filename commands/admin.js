@@ -24,23 +24,6 @@ module.exports = {
 						.addStringOption(option => option.setName('newstatus').setDescription("What is the new status").setRequired(true))
 				)
 		)
-		.addSubcommandGroup(group =>
-			group
-			.setName('reactionroles')
-			.setDescription("Prepare the Reaction Roles")
-				.addSubcommand(subcommand =>
-					subcommand
-						.setName('setup')
-						.setDescription("Set up Reaction Roles")
-						.addBooleanOption(option => option.setName('setup').setDescription("N/A").setRequired(true))
-				)
-				.addSubcommand(subcommand =>
-					subcommand
-						.setName('edit')
-						.setDescription("Edit existing Reaction Roles")
-						.addStringOption(option => option.setName('edit').setDescription("N/A").setRequired(true))
-				)
-		)
 		.addSubcommand(subcommand =>
 			subcommand
 				.setName('editmulamsg')

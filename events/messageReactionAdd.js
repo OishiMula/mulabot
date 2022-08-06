@@ -27,6 +27,15 @@ module.exports = {
       case '🍪':
         console.log(`Reaction Roles added: 🍪 - ${user.tag}`);
         break;
+      case '🦩':
+        console.log(`Reaction Roles added: 🦩 - ${user.tag}`);
+        break;
+      case '🦆':
+        console.log(`Reaction Roles added: 🦆 - ${user.tag}`);
+        break;
+      case '📘':
+        console.log(`Reaction Roles added: 📘 - ${user.tag}`);
+        break;
     }
   }
 }
