@@ -25,6 +25,7 @@ const randomGifs = [
   'crypto',
   'bear',
   'bull',
+  'feet',
   'rip',
   'ginger',
   'gingers',
