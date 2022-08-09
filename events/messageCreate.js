@@ -70,6 +70,10 @@ module.exports = {
           case 'shillington':
             matchMessage[searchQuery] = 'ups delivery';
             break;
+          case 'pasta':
+          case 'linguini':
+            matchMessage[searchQuery] = 'toby office';
+            break;
           default:
             break;
         }
