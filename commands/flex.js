@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, AttachmentBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const mulaFN = require('../mula_functions');
 const secrets = require('../config/secrets');
@@ -13,6 +13,11 @@ const { createCollage } = require('@mtblc/image-collage');
 const blockfrostAPI = new Blockfrost.BlockFrostAPI({
   projectId: secrets.blockfrostToken
 });
+
+
+  //TODO : select menu for addy input
+  //TODO : more pages of buttons 
+
 
 // Functions
 async function getAddressFromHandle(handle) {
@@ -53,7 +58,7 @@ async function getAddressFromHandle(handle) {
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('flex')
-		.setDescription('Flex those cNFTs'),
+		.setDescription('Flex those cNFTs. Send this command to start.'),
 	async execute(interaction) {
     //const filter = m => interaction.user.id === m.author.id;
     let address;
@@ -74,14 +79,15 @@ module.exports = {
     try {
       stakeAddress = (await blockfrostAPI.addresses(address)).stake_address;
     } catch (error) {
-      await interaction.followUp({
-        content: `Sorry! I couldn't find anything for the address: ${address}`,
+      await interaction.editReply({
+        //TODO :  add handle/address
+        content: `Sorry! I couldn't find anything for the address:`,
         ephemeral: true
       });
       return "error";
     }
     
-    await interaction.followUp({
+    await interaction.editReply({
       content: `Thanks for that, please wait while I'm checking what you have.`, 
       ephemeral: true
     });
@@ -138,42 +144,44 @@ module.exports = {
       sortedAssets[sortAssets[i][0]] = sortAssets[i][1];
     }
 
-    // Get top 3 NFTs
+    // Get top NFTs
     let count = 1;
-    let topThree = [];
+    let topNftNames = [];
     for (asset in sortedAssets) {
-      topThree.push(asset);
+      topNftNames.push(asset);
       count ++;
       if (count === 6) break;
     }
-    const topThreeNfts = new ActionRowBuilder()
+
+    // Create the buttons
+    const topNfts = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
-          .setCustomId(topThree[0])
-          .setLabel(topThree[0])
+          .setCustomId(topNftNames[0])
+          .setLabel(topNftNames[0])
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setCustomId(topThree[1])
-          .setLabel(topThree[1])
+          .setCustomId(topNftNames[1])
+          .setLabel(topNftNames[1])
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setCustomId(topThree[2])
-          .setLabel(topThree[2])
+          .setCustomId(topNftNames[2])
+          .setLabel(topNftNames[2])
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setCustomId(topThree[3])
-          .setLabel(topThree[3])
+          .setCustomId(topNftNames[3])
+          .setLabel(topNftNames[3])
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setCustomId(topThree[4])
-          .setLabel(topThree[4])
+          .setCustomId(topNftNames[4])
+          .setLabel(topNftNames[4])
           .setStyle(ButtonStyle.Primary),
       );
       
     
-    await interaction.followUp({ 
+    await interaction.editReply({ 
       content: "Done! These are your top five NFTs. Choose one or type the project name you want to flex.", 
-      components: [topThreeNfts],
+      components: [topNfts],
       ephemeral: true
     });
 
@@ -184,46 +192,41 @@ module.exports = {
 
     let choice = await interaction.channel.awaitMessageComponent({ buttonFilter, ComponentType: ComponentType.Button, max: 1 })
     
-    await interaction.followUp({
-      content: `Got it, your choice was: **${choice.customId}**.`,
+    await interaction.editReply({
+      content: `Got it, your choice was: **${choice.customId}**`,
+      components: [],
       ephemeral: true
-    })
+    });
+
     // Extracting the images for the gif
     let blockfrostImages = []
     let blockfrostDownload;
     for (asset in sortedAssets[choice.customId]) {
+      await interaction.editReply({
+        content: `**${choice.customId}** Image ${asset} out of ${sortedAssets[choice.customId].length} processed.`,
+        ephemeral: true
+      })
       blockfrostDownload = await blockfrostAPI.assetsById(sortedAssets[choice.customId][asset].hex)
       blockfrostImages.push(`${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`)
     }
+
+    await interaction.editReply({
+      content: `Finished **${choice.customId}**. Please wait.`,
+      ephemeral: true
+    });
 
     const collageWidth = 1000;
     let flexImage = await createCollage(blockfrostImages, collageWidth)
 
     await interaction.channel.send({
+      content: `Here you go ${interaction.user}`,
       files: [{
         attachment: flexImage,
         name: 'flex.jpg'
       }]
     });
 
-
-    /*let choice;
-    const choiceCollector = interaction.channel.createMessageComponentCollector({ componentType: ComponentType.Button, max: 1 })
-    choiceCollector.on('collect', i => {
-      if (i.user.id === interaction.user.id) {
-        console.log(i.customId);
-      }
-      else {
-        console.log('no ding for u');
-      }
-    });*/
-
-    //console.log(Blockfrost.parseAsset(test.unit));
-    //console.log(addressAssets);
-    //console.log(typeof(addressAssets));
-
-
-
     return 'done';
+
   }
 }
