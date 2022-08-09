@@ -1,5 +1,6 @@
 const fs = require('fs');
-const {MessageEmbed} = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
+//const {MessageEmbed} = require('discord.js');
 const Blockfrost = require('@blockfrost/blockfrost-js');
 const Fuse = require('fuse.js');
 const secrets = require('./config/secrets');
@@ -107,7 +108,12 @@ module.exports.download = async function (data, type) {
 
   switch (type) {
     case 'data':
-      response = await fetch(data);
+      try {
+        response = await fetch(data);
+      } catch (error) {
+        console.error(`ERROR: ${error}\nPossible OpenCNFT/JpgStore down?`)
+        return "error"
+      }
       return await response.json();
 
     case 'thumbnail': {
@@ -248,13 +254,13 @@ module.exports.createMsg = async function (payload) {
 
   const color = '#F70000'
 
-  const newMessage = await new MessageEmbed()
+  const newMessage = new EmbedBuilder()
     .setTitle(payload.title)
     .setThumbnail(payload.thumbnail)
     .setColor(color)
     .setAuthor(author)
     .setFooter(footer)
-    .addField(payload.header, payload.content);
+    .addFields({ name: payload.header, value: payload.content });
 
   return newMessage;
 }

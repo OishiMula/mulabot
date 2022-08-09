@@ -12,16 +12,17 @@ const config = require('./config/config')
 const secrets = require('./config/secrets')
 
 // Create Discord client Instance
-const { Client, Collection, Intents} = require('discord.js');
-const discordIntents = new Intents();
-discordIntents.add(Intents.FLAGS.GUILDS,
-	Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
-	Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-	Intents.FLAGS.DIRECT_MESSAGES,
-	Intents.FLAGS.GUILD_MESSAGES)
+const { Client, Collection, Partials, GatewayIntentBits } = require('discord.js');
 const client = new Client({
-	intents: discordIntents,
-	partials: ["MESSAGE", "REACTION"]
+	intents: [
+	GatewayIntentBits.Guilds,
+	GatewayIntentBits.GuildEmojisAndStickers,
+	GatewayIntentBits.GuildMessageReactions,
+	GatewayIntentBits.DirectMessages,
+	GatewayIntentBits.GuildMessages,
+	GatewayIntentBits.MessageContent
+	],
+	partials: [Partials.Message, Partials.Reaction]
 });
 
 // To load commands

@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const mulaFN = require('../mula_functions');
 const config = require('../config/config');
+const secrets = require('../config/secrets');
 const cron = require('node-cron');
 const Keyv = require('keyv');
 const keyv = new Keyv('redis://localhost:6379/0');
@@ -15,13 +16,11 @@ module.exports = {
   async execute(client) {
     console.log("Mula Bot Starting ...");
 
-    // Retrieve ReactionMessage
-    const reactMsg = '1004974668912009327';
-
+    // Reaction Roles
     async function updateReactRoles() {
       let channelData = await client.channels.cache.find(channelList => channelList.id === '941434790861754439')
       let editMsg = await channelData.messages.fetch('1004974668912009327');
-      // cant retireve the object to use as normal
+      // cant retrieve the object to use as normal
       //let editMsg = await keyv.get('rolesmsg');
 
       let emojiRoles = ['🌞', '🐇', '⚔️', '🐱', '🦉', '👻', '🍪', '🦩', '🦆', '📘'];
@@ -48,15 +47,16 @@ module.exports = {
       for (let emoji in emojiRoles) editMsg.react(emojiRoles[emoji]);
       console.log('INFO: Reaction Roles: Update Complete')
 
-
       await keyv.set('rolesmsg', editMsg);
     }
 
-    // Reactions Role Code
     // Turn on the following line to update Reaction Roles
     //updateReactRoles();
 
-    const reactionRoles = new ReactionRole(client, [
+    // Retrieve ReactionMessage
+    let reactMsg = '1004974668912009327';
+    
+    const rrConfig = [
       { messageId: reactMsg, reaction: "🌞", roleId: "986823055756111963" },
       { messageId: reactMsg, reaction: "🐇", roleId: "984073693770707025" },
       { messageId: reactMsg, reaction: "⚔️", roleId: "984073414270656523" },
@@ -67,7 +67,9 @@ module.exports = {
       { messageId: reactMsg, reaction: "🦩", roleId: "1004990285773799436" },
       { messageId: reactMsg, reaction: "🦆", roleId: "1005090798238437446" },
       { messageId: reactMsg, reaction: "📘", roleId: "1005330874516123649" },
-    ]);
+    ]
+
+    const reactionRoles = new ReactionRole(client, rrConfig);
 
     // * Epoch Countdown *
     // Check to see if epoch data exist
