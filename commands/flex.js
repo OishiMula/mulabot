@@ -5,7 +5,7 @@ const api = require('../config/api');
 const Blockfrost = require('@blockfrost/blockfrost-js');
 const _ = require('lodash');
 //const Animated_GIF = require('animated_gif');
-const ipfsBase = 'https://infura-ipfs.io/ipfs/';
+const ipfsBase = 'https://cloudflare-ipfs.com/ipfs/';
 const { createCollage } = require('@mtblc/image-collage');
 const Keyv = require('keyv');
 const keyv = new Keyv('redis://localhost:6379/0');
@@ -207,8 +207,8 @@ module.exports = {
       })
     if (errorFlag === 1) return 'error';
     
+    // To enter a project manually
     if (choice.customId === 'manual') {
-      // To enter a project manually
       await flexInteraction.editReply({ 
         content: "Check the popup!", 
         components: [],
@@ -233,39 +233,58 @@ module.exports = {
       choice.customId = manualProject.toLowerCase();
 
       await manualInteraction.reply({
-        content: `Got it, your choice was: **${choice.customId}**`,
+        content: `Thank you, please wait.`,
         ephemeral: true
       });
     }
 
-    else {
-      // If any of the top choices were clicked
-      await flexInteraction.editReply({
-        content: `Got it, your choice was: **${choice.customId}**`,
-        components: [],
-        ephemeral: true
+
+    await flexInteraction.editReply({
+      content: `Got it, your choice was: **${choice.customId}**`,
+      components: [],
+      ephemeral: true
       });
-    }
+
 
     // Extracting the images for the gif
     let blockfrostImages = []
     let blockfrostDownload;
+
     for (asset in sortedAssets[choice.customId]) {
       await flexInteraction.editReply({
         content: `**${choice.customId}** Image ${asset} out of ${sortedAssets[choice.customId].length} processed.`,
         ephemeral: true
       })
       blockfrostDownload = await blockfrostAPI.assetsById(sortedAssets[choice.customId][asset].hex)
-      blockfrostImages.push(`${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`)
+      //blockfrostImages.push(`${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`)
+      const ipfsImage = `${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`;
+      let ipfsResponse;
+      try {
+        ipfsResponse = await fetch(ipfsImage);
+      } catch(error) {
+        console.error(`ERROR: Fetch\n${error}`)
+        asset --;
+        continue;
+      }
+      const ipfsBuffer = await ipfsResponse.arrayBuffer();
+      const ipfsArrayBuffer = Buffer.from(ipfsBuffer);
+      blockfrostImages.push(ipfsArrayBuffer);
     }
 
     await flexInteraction.editReply({
-      content: `Finished **${choice.customId}**. Please wait.`,
+      content: `Finished **${choice.customId}**. Please wait. This may take a bit.`,
       ephemeral: true
     });
 
-    const collageWidth = 1000;
-    let flexImage = await createCollage(blockfrostImages, collageWidth)
+    const collageWidth = 2000;
+    let flexImage;
+    try {
+      flexImage = await createCollage(blockfrostImages, collageWidth)
+    } catch (error) {
+      console.log(`ERROR: Photo Collage.\n ${error}`)
+      return "error";
+    }
+   
 
     await interaction.channel.send({
       content: `Here you go ${interaction.user}`,

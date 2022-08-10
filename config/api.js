@@ -8,7 +8,7 @@ const jpgProject = 'https://server.jpgstoreapis.com/policy/';
 const opencnftPolicy = 'https://api.opencnft.io/1/policy/';
 const opencnftTopDaily = 'https://api.opencnft.io/1/rank?window=24h';
 const opensea = 'https://api.opensea.io/api/v1/collection/';
-const ipfsBase = 'https://infura-ipfs.io/ipfs/';
+const ipfsBase = 'https://gateway.ipfs.io/ipfs/';
 
 // jpg Store logo for default images
 const jpgStoreLogo = 'QmbbfCQQBuVcWkX7hJ23LVNgoXRQi4mAVzT92mmcwBvqFF'
