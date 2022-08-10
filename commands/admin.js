@@ -33,7 +33,6 @@ module.exports = {
 				.addStringOption(option => option.setName('editmsg').setDescription("Provide the new message to enter").setRequired(true))
 		),
 	async execute(interaction) {
-		// TODO: Fix this soon
 		let allowed = ['374929603594027018', '365119859568148481'];
 		if (!allowed.includes(interaction.user.id)) await interaction.editReply(`You ain't oishi, shoo.`);
 		//if (interaction.user.id !== '374929603594027018') await interaction.editReply({content: `You ain't oishi, shoo.`,ephemeral: true});
@@ -53,7 +52,6 @@ module.exports = {
 			}
 
 			if (newstatus !== null) {
-				// TODO: Add type
 				await interaction.editReply(`Setting status as Playing **${newstatus}**`);
 				console.log(`Info: New status: ${newstatus}`);
 				interaction.client.user.setActivity(newstatus);

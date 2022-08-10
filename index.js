@@ -1,3 +1,4 @@
+"use strict";
 /* Mula Bot - Revamped in Node.js!
 Created by Oishi Mula, 5/1/2022 
 pm2 Timestamp / add entry:
@@ -57,9 +58,12 @@ client.on('interactionCreate', async interaction => {
 	// Start a timer to see how long the command takes
 	const t0 = performance.now();
 
-	// Quickhack for Multimsg
-	if (interaction.commandName === 'mulamsgmulti') {
+	// Quickhack for Flex
+	if (interaction.commandName === 'flex') {
 		await command.execute(interaction);
+		const t1 = performance.now();
+		console.log(`Command: ${interaction.commandName} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`)
+		return;
 	}
 
 	// If it's a command that needs to be sent quietly, else do a regular command
@@ -86,12 +90,3 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(secrets.botToken);
-
-/* Personal Todo list:
-TODO: mmm mode / party mode
-TODO: toke
-TODO: 0verdrips connect to jpg store
-TODO: button for hype
-TODO: Project lookup, ignore articles (the, a, an)
-TODO: holder roles based off reacts
-*/

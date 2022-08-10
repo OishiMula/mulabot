@@ -133,7 +133,7 @@ module.exports = {
     }
 
     // mini messi
-    if (messageContent.includes("mini messi")) {
+    if (messageContent.includes("mini messi") || messageContent.includes('messi')) {
       console.log(`Command: Mini Messi -- ${message.author.tag}`)
       const minimessiDir = `${extrasPath}/messi`
       randomFile(minimessiDir, (Err, minimessiGif) => {

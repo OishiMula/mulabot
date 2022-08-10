@@ -117,7 +117,6 @@ module.exports.download = async function (data, type) {
       return await response.json();
 
     case 'thumbnail': {
-      //TODO: retry loop
       let imgJ
       response = await fetch(data);
       

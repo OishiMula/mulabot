@@ -28,7 +28,6 @@ module.exports = {
 		const imgURL = await mulaFN.download(`${api.opencnftPolicy}${project.policy_id}`, 'thumbnail');
 
 		// Retrieve recent sales
-		// TODO: Add more pages
 		const jpgSalesJ = await mulaFN.download(`${api.jpgProject}${project.policy_id}/sales?page=1`, 'data');
 		const jpgSalesData = jpgSalesJ.slice(0, amount);
 

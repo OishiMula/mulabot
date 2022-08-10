@@ -25,8 +25,7 @@ const randomGifs = [
   'crypto',
   'bear',
   'bull',
-  'feet',
-  'foot',
+  'linguini',
   'rip',
   'ginger',
   'gingers',
@@ -35,7 +34,6 @@ const randomGifs = [
   'shillington',
   'ups',
   'here we go',
-  'messi'
 ]
 
 // Twitter prefix message

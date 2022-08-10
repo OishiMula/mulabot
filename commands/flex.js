@@ -1,23 +1,19 @@
-/* eslint-disable no-unused-vars */
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
-const mulaFN = require('../mula_functions');
 const secrets = require('../config/secrets');
 const api = require('../config/api');
 const Blockfrost = require('@blockfrost/blockfrost-js');
 const _ = require('lodash');
-const Animated_GIF = require('animated_gif');
+//const Animated_GIF = require('animated_gif');
 const ipfsBase = 'https://infura-ipfs.io/ipfs/';
 const { createCollage } = require('@mtblc/image-collage');
+const Keyv = require('keyv');
+const keyv = new Keyv('redis://localhost:6379/0');
+keyv.on('error', err => console.error('ERROR: Keyv connection error:', err));
 
 const blockfrostAPI = new Blockfrost.BlockFrostAPI({
   projectId: secrets.blockfrostToken
 });
-
-
-  //TODO : select menu for addy input
-  //TODO : more pages of buttons 
-
 
 // Functions
 async function getAddressFromHandle(handle) {
@@ -60,34 +56,41 @@ module.exports = {
 		.setName('flex')
 		.setDescription('Flex those cNFTs. Send this command to start.'),
 	async execute(interaction) {
-    //const filter = m => interaction.user.id === m.author.id;
     let address;
-    // let addressValidationRegex = new RegExp('addr1[a-z0-9]+', 'g');
+
     // First time setup
-    await interaction.editReply('Please enter an **addr1** address or **$handle**')
 
-    const filter = m => interaction.user.id === m.author.id;
-    const userAddrReply = await interaction.channel.awaitMessages({ filter, time: 25000, max: 1, error: ['time'] })
-    // TODO: address validation w/ regex
-    // TODO: delete user reply
-    address = userAddrReply.first().content;
-    userAddrReply.first().delete();
+    // Pop up modal
+    const modal = new ModalBuilder()
+      .setCustomId('flextitle')
+      .setTitle('Mula Bot Flex Time');
 
+    const addressInput = new TextInputBuilder()
+      .setCustomId('userAddress')
+      .setLabel('Please enter an addr1 or $handle')
+      .setStyle(TextInputStyle.Short);
+
+    const inputActionRow = new ActionRowBuilder().addComponents(addressInput);
+    modal.addComponents(inputActionRow);
+    await interaction.showModal(modal);
+    const modalFilter = i => i.customId === "userAddress";
+    const flexInteraction = await interaction.awaitModalSubmit({ modalFilter, time: 25000 })
+    address = flexInteraction.fields.getTextInputValue('userAddress');
+    
     // Check to see if $handle
     if (address.charAt(0) === '$') address = await getAddressFromHandle(address.slice(1));
     let stakeAddress;
     try {
       stakeAddress = (await blockfrostAPI.addresses(address)).stake_address;
     } catch (error) {
-      await interaction.editReply({
-        //TODO :  add handle/address
-        content: `Sorry! I couldn't find anything for the address:`,
+      await flexInteraction.reply({
+        content: `Sorry! I couldn't find anything for the address`,
         ephemeral: true
       });
       return "error";
     }
     
-    await interaction.editReply({
+    await flexInteraction.reply({
       content: `Thanks for that, please wait while I'm checking what you have.`, 
       ephemeral: true
     });
@@ -128,7 +131,7 @@ module.exports = {
 
       for (let project in jpgPolicyData) {
         if (assetInfo.policyId === jpgPolicyData[project].policy_id) {
-          assetInfo.policyId = jpgPolicyData[project].display_name;
+          assetInfo.policyId = jpgPolicyData[project].display_name.toLowerCase();
           assetData.push(assetInfo);
           break;
         }
@@ -144,44 +147,46 @@ module.exports = {
       sortedAssets[sortAssets[i][0]] = sortAssets[i][1];
     }
 
-    // Get top NFTs
-    let count = 1;
-    let topNftNames = [];
-    for (asset in sortedAssets) {
-      topNftNames.push(asset);
-      count ++;
-      if (count === 6) break;
-    }
-
     // Create the buttons
-    const topNfts = new ActionRowBuilder()
-      .addComponents(
-        new ButtonBuilder()
-          .setCustomId(topNftNames[0])
-          .setLabel(topNftNames[0])
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId(topNftNames[1])
-          .setLabel(topNftNames[1])
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId(topNftNames[2])
-          .setLabel(topNftNames[2])
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId(topNftNames[3])
-          .setLabel(topNftNames[3])
-          .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId(topNftNames[4])
-          .setLabel(topNftNames[4])
-          .setStyle(ButtonStyle.Primary),
-      );
-      
+    let count = 0;
+    let nftAmount = Object.keys(sortedAssets).length;
+    let topNftRow = new ActionRowBuilder()
+    let BottomNftRow = new ActionRowBuilder()
+
+    for (asset in sortedAssets) {
+      count ++;
+      // Manual Project Prompt
+      if (count === nftAmount || count === 10) {
+        BottomNftRow.addComponents(
+          new ButtonBuilder()
+            .setCustomId('manual')
+            .setLabel('Other NFT...')
+            .setStyle(ButtonStyle.Success)
+        );
+      }
+
+      if (count <= 5) {
+        topNftRow.addComponents(
+          new ButtonBuilder()
+            .setCustomId(asset)
+            .setLabel(asset.slice(0, 25))
+            .setStyle(ButtonStyle.Primary)
+        );
+      }
+      else if (count <= 9) {
+        BottomNftRow.addComponents(
+          new ButtonBuilder()
+            .setCustomId(asset)
+            .setLabel(asset.slice(0, 25))
+            .setStyle(ButtonStyle.Primary)
+        );
+      }
+      else break;
+    }
     
-    await interaction.editReply({ 
-      content: "Done! These are your top five NFTs. Choose one or type the project name you want to flex.", 
-      components: [topNfts],
+    await flexInteraction.editReply({ 
+      content: "Done! These are your top cNFTs. Choose it to flex it. Other NFT to enter one manually.", 
+      components: [topNftRow, BottomNftRow],
       ephemeral: true
     });
 
@@ -190,19 +195,63 @@ module.exports = {
       i.user.id === interaction.user.id;
     }
 
-    let choice = await interaction.channel.awaitMessageComponent({ buttonFilter, ComponentType: ComponentType.Button, max: 1 })
+    let errorFlag = 0;
+    let choice = await interaction.channel.awaitMessageComponent({ buttonFilter, ComponentType: ComponentType.Button, max: 1, time: 15000 })
+      .catch(() => {
+        flexInteraction.editReply({
+          content: `You didn't make a choice in time, try again.`,
+          components: [],
+          ephemeral: true
+        });
+        errorFlag = 1;
+      })
+    if (errorFlag === 1) return 'error';
     
-    await interaction.editReply({
-      content: `Got it, your choice was: **${choice.customId}**`,
-      components: [],
-      ephemeral: true
-    });
+    if (choice.customId === 'manual') {
+      // To enter a project manually
+      await flexInteraction.editReply({ 
+        content: "Check the popup!", 
+        components: [],
+        ephemeral: true
+      });
+
+      const manualModal = new ModalBuilder()
+        .setCustomId('manualmodal')
+        .setTitle('Mula Bot Manual Flex');
+
+      const manualProjectInput = new TextInputBuilder()
+        .setCustomId('cnftProject')
+        .setLabel('Please enter a cnft project name')
+        .setStyle(TextInputStyle.Short);
+
+      const manualActionRow = new ActionRowBuilder().addComponents(manualProjectInput);
+      manualModal.addComponents(manualActionRow);
+      await choice.showModal(manualModal);
+      const manualFilter = i => i.customId === 'cnftProject';
+      const manualInteraction = await interaction.awaitModalSubmit({ manualFilter, time: 25000 });
+      const manualProject = manualInteraction.fields.getTextInputValue('cnftProject');
+      choice.customId = manualProject.toLowerCase();
+
+      await manualInteraction.reply({
+        content: `Got it, your choice was: **${choice.customId}**`,
+        ephemeral: true
+      });
+    }
+
+    else {
+      // If any of the top choices were clicked
+      await flexInteraction.editReply({
+        content: `Got it, your choice was: **${choice.customId}**`,
+        components: [],
+        ephemeral: true
+      });
+    }
 
     // Extracting the images for the gif
     let blockfrostImages = []
     let blockfrostDownload;
     for (asset in sortedAssets[choice.customId]) {
-      await interaction.editReply({
+      await flexInteraction.editReply({
         content: `**${choice.customId}** Image ${asset} out of ${sortedAssets[choice.customId].length} processed.`,
         ephemeral: true
       })
@@ -210,7 +259,7 @@ module.exports = {
       blockfrostImages.push(`${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`)
     }
 
-    await interaction.editReply({
+    await flexInteraction.editReply({
       content: `Finished **${choice.customId}**. Please wait.`,
       ephemeral: true
     });
