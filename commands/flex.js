@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle  } = require('discord.js');
+const { ActionRowBuilder, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle, SelectMenuBuilder } = require('discord.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const secrets = require('../config/secrets');
 const api = require('../config/api');
@@ -57,11 +57,8 @@ module.exports = {
 		.setName('flex')
 		.setDescription('Flex those cNFTs. Send this command to start.'),
 	async execute(interaction) {
-
     let address;
-
     // First time setup
-
     // Pop up modal
     const modal = new ModalBuilder()
       .setCustomId('flextitle')
@@ -151,54 +148,39 @@ module.exports = {
 
     // Create the buttons
     let count = 0;
-    let nftAmount = Object.keys(sortedAssets).length;
+    //let nftAmount = Object.keys(sortedAssets).length;
+    /* old code
     let topNftRow = new ActionRowBuilder()
     let BottomNftRow = new ActionRowBuilder()
-
+    */
+    // new code, select menu
+    let nftOptions = new ActionRowBuilder()
+      .addComponents(
+        new SelectMenuBuilder()
+          .setCustomId(asset)
+          .setPlaceholder('Select a CNFT Collection')
+      )
     for (asset in sortedAssets) {
       count ++;
-      // Manual Project Prompt
-      if (count === nftAmount || count === 6) {
-        BottomNftRow.addComponents(
-          new ButtonBuilder()
-            .setCustomId('manual')
-            .setLabel('Other NFT...')
-            .setStyle(ButtonStyle.Success)
-        );
-      }
-
-      if (count <= 3) {
-        topNftRow.addComponents(
-          new ButtonBuilder()
-            .setCustomId(asset)
-            .setLabel(asset.slice(0, 25))
-            .setStyle(ButtonStyle.Primary)
-        );
-      }
-      else if (count <= 5) {
-        BottomNftRow.addComponents(
-          new ButtonBuilder()
-            .setCustomId(asset)
-            .setLabel(asset.slice(0, 25))
-            .setStyle(ButtonStyle.Primary)
-        );
-      }
-      else break;
+      nftOptions.components[0].addOptions(
+        {
+          label: asset,
+          description: `Number of NFTs: ${sortedAssets[asset].length}`,
+          value: asset
+        }
+      )
+      if (count === 25) break;
     }
     
     await flexInteraction.editReply({ 
-      content: "Done! These are your top cNFTs. Choose it to flex it. Other NFT to enter one manually.", 
-      components: [topNftRow, BottomNftRow],
+      content: "Done! These are your top cNFTs. Choose it to flex it.", 
+      components: [nftOptions],
       ephemeral: true
     });
 
-    const buttonFilter = i => {
-      i.deferReply();
-      i.user.id === interaction.user.id;
-    }
-
     let errorFlag = 0;
-    let choice = await interaction.channel.awaitMessageComponent({ buttonFilter, ComponentType: ComponentType.Button, max: 1, time: 15000 })
+    const selectFilter = i => i.user.id === interaction.user.id;
+    let choice = await interaction.channel.awaitMessageComponent({ selectFilter, componentType: ComponentType.SelectMenu, time: 10000 })
       .catch(() => {
         flexInteraction.editReply({
           content: `You didn't make a choice in time, try again.`,
@@ -208,101 +190,47 @@ module.exports = {
         errorFlag = 1;
       })
     if (errorFlag === 1) return 'error';
-    
-    // To enter a project manually
-    if (choice.customId === 'manual') {
-      await flexInteraction.editReply({ 
-        content: "Check the popup!", 
-        components: [],
-        ephemeral: true
-      });
-
-      const manualModal = new ModalBuilder()
-        .setCustomId('manualmodal')
-        .setTitle('Mula Bot Manual Flex');
-
-      const manualProjectInput = new TextInputBuilder()
-        .setCustomId('cnftProject')
-        .setLabel('Please enter a cnft project name')
-        .setStyle(TextInputStyle.Short);
-
-      const manualActionRow = new ActionRowBuilder().addComponents(manualProjectInput);
-      manualModal.addComponents(manualActionRow);
-      await choice.showModal(manualModal);
-      const manualFilter = i => i.customId === 'cnftProject';
-      const manualInteraction = await interaction.awaitModalSubmit({ manualFilter, time: 25000 });
-      const manualProject = manualInteraction.fields.getTextInputValue('cnftProject');
-      choice.customId = manualProject.toLowerCase();
-
-      await manualInteraction.reply({
-        content: `Thank you, please wait.`,
-        ephemeral: true
-      });
-    }
 
 
     await flexInteraction.editReply({
-      content: `Got it, your choice was: **${choice.customId}**`,
+      content: `Got it, your choice was: **${choice.values[0]}**`,
       components: [],
       ephemeral: true
       });
-
 
     // Extracting the images for the gif
     let blockfrostImages = []
     let blockfrostDownload;
 
-    for (asset in sortedAssets[choice.customId]) {
+    for (asset in sortedAssets[choice.values[0]]) {
       await flexInteraction.editReply({
-        content: `**${choice.customId}** Image ${asset} out of ${sortedAssets[choice.customId].length} processed.`,
+        content: `**${choice.values[0]}** Image ${asset} out of ${sortedAssets[choice.values[0]].length} processed.`,
         ephemeral: true
       })
     
-      blockfrostDownload = await blockfrostAPI.assetsById(sortedAssets[choice.customId][asset].hex)
+      blockfrostDownload = await blockfrostAPI.assetsById(sortedAssets[choice.values[0]][asset].hex)
       blockfrostImages.push(`${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`)    
-      /*
-      blockfrostDownload = await blockfrostAPI.assetsById(sortedAssets[choice.customId][asset].hex)
-      const ipfsString = blockfrostDownload.onchain_metadata.image.slice(7);
-      const ipfsImage = `${ipfsBase}${ipfsString}`;
-      let ipfsResponse;
-      try {
-        ipfsResponse = await fetch(ipfsImage);
-      } catch(error) {
-        asset --;
-        console.error(`${error} || Flex Fetch`)
-        await mulaFN.sleep(2000);
-        continue;
-      }
-      const ipfsArrayBuffer = await ipfsResponse.arrayBuffer();
-      const ipfsBuffer = Buffer.from(ipfsArrayBuffer)
-
-      fs.writeFileSync(`${imageTempDir}/${ipfsString}.png`, ipfsBuffer, (error) => {
-        if (error) console.error(error);
-      });
-      */
-
     }
 
     await flexInteraction.editReply({
-      content: `Finished **${choice.customId}**. Please wait. This may take a bit.`,
+      content: `Finished **${choice.values[0]}**. Please wait. This may take a bit.`,
       ephemeral: true
     });
 
     const collageWidth = 2000;
     let flexImage;
     try {
-      flexImage = await createCollage(blockfrostImages, collageWidth, 'image/png')
+      flexImage = await createCollage(blockfrostImages, collageWidth)
     } catch (error) {
       console.error(`ERROR: Photo Collage.\n${error}`)
       return "error";
     }
    
-
     await interaction.channel.send({
       content: `Here you go ${interaction.user}`,
       files: [{
         attachment: flexImage,
-        name: `flex${interaction.user.id}${choice.customId}.jpg`
+        name: `flex${interaction.user.id}${choice.values[0]}.jpg`
       }]
     });
 

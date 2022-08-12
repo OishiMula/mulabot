@@ -18,6 +18,14 @@ module.exports = {
   
     let messageContent = message.content.toLowerCase();
 
+    // Linguini L take
+    if (message.author.id === '932913898473013268') {
+      Tenor.Search.Query('L', "50").then(results => {
+        const randomGif = results[Math.floor(Math.random() * results.length)];
+        message.channel.send(randomGif.url);    
+      })
+    }
+
     // Linguini_ Kong Fud Filter
     /*if (message.author.id === '932913898473013268' && (messageContent.includes('kong') || messageContent.includes('kongs') || messageContent.includes('ongs') || messageContent.includes('ngs'))) {
       message.delete();
