@@ -11,6 +11,7 @@ const Keyv = require('keyv');
 const keyv = new Keyv('redis://localhost:6379/0');
 keyv.on('error', err => console.error('ERROR: Keyv connection error:', err));
 
+
 const blockfrostAPI = new Blockfrost.BlockFrostAPI({
   projectId: secrets.blockfrostToken
 });
@@ -56,6 +57,7 @@ module.exports = {
 		.setName('flex')
 		.setDescription('Flex those cNFTs. Send this command to start.'),
 	async execute(interaction) {
+
     let address;
 
     // First time setup
@@ -156,7 +158,7 @@ module.exports = {
     for (asset in sortedAssets) {
       count ++;
       // Manual Project Prompt
-      if (count === nftAmount || count === 10) {
+      if (count === nftAmount || count === 6) {
         BottomNftRow.addComponents(
           new ButtonBuilder()
             .setCustomId('manual')
@@ -165,7 +167,7 @@ module.exports = {
         );
       }
 
-      if (count <= 5) {
+      if (count <= 3) {
         topNftRow.addComponents(
           new ButtonBuilder()
             .setCustomId(asset)
@@ -173,7 +175,7 @@ module.exports = {
             .setStyle(ButtonStyle.Primary)
         );
       }
-      else if (count <= 9) {
+      else if (count <= 5) {
         BottomNftRow.addComponents(
           new ButtonBuilder()
             .setCustomId(asset)
@@ -255,20 +257,30 @@ module.exports = {
         content: `**${choice.customId}** Image ${asset} out of ${sortedAssets[choice.customId].length} processed.`,
         ephemeral: true
       })
+    
       blockfrostDownload = await blockfrostAPI.assetsById(sortedAssets[choice.customId][asset].hex)
-      //blockfrostImages.push(`${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`)
-      const ipfsImage = `${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`;
+      blockfrostImages.push(`${ipfsBase}${blockfrostDownload.onchain_metadata.image.slice(7)}`)    
+      /*
+      blockfrostDownload = await blockfrostAPI.assetsById(sortedAssets[choice.customId][asset].hex)
+      const ipfsString = blockfrostDownload.onchain_metadata.image.slice(7);
+      const ipfsImage = `${ipfsBase}${ipfsString}`;
       let ipfsResponse;
       try {
         ipfsResponse = await fetch(ipfsImage);
       } catch(error) {
-        console.error(`ERROR: Fetch\n${error}`)
         asset --;
+        console.error(`${error} || Flex Fetch`)
+        await mulaFN.sleep(2000);
         continue;
       }
-      const ipfsBuffer = await ipfsResponse.arrayBuffer();
-      const ipfsArrayBuffer = Buffer.from(ipfsBuffer);
-      blockfrostImages.push(ipfsArrayBuffer);
+      const ipfsArrayBuffer = await ipfsResponse.arrayBuffer();
+      const ipfsBuffer = Buffer.from(ipfsArrayBuffer)
+
+      fs.writeFileSync(`${imageTempDir}/${ipfsString}.png`, ipfsBuffer, (error) => {
+        if (error) console.error(error);
+      });
+      */
+
     }
 
     await flexInteraction.editReply({
@@ -279,9 +291,9 @@ module.exports = {
     const collageWidth = 2000;
     let flexImage;
     try {
-      flexImage = await createCollage(blockfrostImages, collageWidth)
+      flexImage = await createCollage(blockfrostImages, collageWidth, 'image/png')
     } catch (error) {
-      console.log(`ERROR: Photo Collage.\n ${error}`)
+      console.error(`ERROR: Photo Collage.\n${error}`)
       return "error";
     }
    
@@ -290,7 +302,7 @@ module.exports = {
       content: `Here you go ${interaction.user}`,
       files: [{
         attachment: flexImage,
-        name: 'flex.jpg'
+        name: `flex${interaction.user.id}${choice.customId}.jpg`
       }]
     });
 
