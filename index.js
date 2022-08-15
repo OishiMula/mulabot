@@ -2,7 +2,7 @@
 /* Mula Bot - Revamped in Node.js!
 Created by Oishi Mula, 5/1/2022 
 pm2 Timestamp / add entry:
-pm2 start index.js --name mulabot --log-date-format "MM-DD | hh:mm:ss a"
+pm2 start index.js --name mulabot --log-date-format "MM/DD hh:mm:ssa"
 */
 
 // Add required libs

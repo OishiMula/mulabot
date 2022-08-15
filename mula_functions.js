@@ -1,11 +1,14 @@
 const fs = require('fs');
 const { EmbedBuilder } = require('discord.js');
-//const {MessageEmbed} = require('discord.js');
 const Blockfrost = require('@blockfrost/blockfrost-js');
 const Fuse = require('fuse.js');
 const secrets = require('./config/secrets');
 const api = require('./config/api');
 const config = require('./config/config');
+const axios = require('axios').default;
+const Keyv = require('keyv');
+const keyv = new Keyv('redis://localhost:6379/0');
+keyv.on('error', err => console.error('ERROR: Keyv connection error:', err));
 
 const blockfrostAPI = new Blockfrost.BlockFrostAPI({
   projectId: secrets.blockfrostToken
@@ -96,123 +99,85 @@ const ERROR_SAYINGS = [
   "anyway.. try again!",
 ]
 
-module.exports = {
-  CREW,
-  SHORTCUTS,
-  SHORTCUTS_ETH,
-  ERROR_SAYINGS,
-}
-
-module.exports.download = async function (data, type) {
+async function download (data, type) {
   let response;
 
-  switch (type) {
-    case 'data':
-      try {
-        response = await fetch(data);
-      } catch (error) {
-        console.error(`ERROR: ${error}\nPossible OpenCNFT/JpgStore down?`)
-        return "error"
-      }
-      return await response.json();
-
-    case 'thumbnail': {
-      let imgJ
-      response = await fetch(data);
-      
-      try {
-        imgJ = await response.json();
-      } catch(error) {
-        console.error(`Error: Image download.\nError: ${error}\nPayload: ${data}`)
-        return api.jpgStoreLogo;
-      }
-      
-      if (typeof (imgJ.thumbnail) !== 'string') return api.jpgStoreLogo;
-      return imgJ.thumbnail.slice(7);
-    }
-
-    case 'project': {
-      // Set up Fuse options to typos/fuzzy search
-      const options = {
-        keys: ['url', 'display_name', 'policy_id'],
-        threshold: 0.2,
-        distance: 0,
-        includeScore: true,
-      };
-
-      const exactOptions = {
-        keys: ['url', 'display_name', 'policy_id'],
-        useExtendedSearch: true,
-        includeScore: true,
-      }
-
-      // variables to begin the jpg store search
-      let jpgPage, jpgResponse, jpgData, match, fuzzymatch, fuse, exactFuse;
-      let result = [];
-
-      for (let num = 1;; num += 1) {
-        // Retrieving data from jpg store, page by page
-        jpgPage = `${api.jpgPolicy}${num}`;
-        jpgResponse = await fetch(jpgPage);
-        jpgData = await jpgResponse.json();
-
-        if (jpgData.length > 0) {
-          // set up fuzzy searches for typos
-          fuse = new Fuse(jpgData, options);
-          exactFuse = new Fuse(jpgData, exactOptions);
-
-          // check to see if there is an exact match, return immediately
-          match = exactFuse.search(`=${data}`);
-          if (match.length > 0) return match[0].item
-
-          // if no exact match, store results in array then flatten
-          result.push(fuse.search(data));
-          result = result.flat();
-
-          // no more results from jpg
-          if (result.length === 0) continue;
-        } else {
-          // no results found
-          if (result.length === 0) return "error";
-
-          // sort the list by score
-          fuzzymatch = result.reduce((prev, curr) => prev.score < curr.score ? prev : curr);
-          return (fuzzymatch.item);
+  try {
+    switch (type) {
+      case 'data':
+        response = await axios.get(data);
+        if (!response.statusText === 'OK') {
+          console.error(`ERROR: Response not OK || Data download`)
+          return 'error';
         }
+        return response.data;
+
+      case 'thumbnail': {
+        response = await axios.get(data);
+        if (typeof (response.data.thumbnail) !== 'string') return api.jpgStoreLogo;
+        return response.data.thumbnail.slice(7);
       }
-    }
 
-    case 'eproject': {
-      response = await fetch(data);
-      const respJ = await response.json();
-      const project = {
-        name: respJ.collection.name,
-        img: respJ.collection.image_url,
+      case 'project': {
+        // Set up Fuse options to typos/fuzzy search
+        const options = {
+          keys: ['url', 'display_name', 'policy_id'],
+          threshold: 0.5,
+          distance: 0,
+          includeScore: true,
+        };
+
+        const exactOptions = {
+          keys: ['url', 'display_name', 'policy_id'],
+          useExtendedSearch: true,
+          includeScore: true,
+        }
+        
+        // variables to begin the jpg store search
+        let match, fuzzymatch, fuse, exactFuse;
+        
+        // retrieve jpgStore cache
+        if (!await keyv.get('jpgstorecache')) await jpgStoreCacheRefresh();
+        const jpgStoreCache = await keyv.get('jpgstorecache');
+
+        // set up fuzzy searches for typos
+        fuse = new Fuse(jpgStoreCache, options);
+        exactFuse = new Fuse(jpgStoreCache, exactOptions);
+
+        // check to see if there is an exact match, return immediately
+        match = exactFuse.search(`=${data}`);
+        if (match.length > 0) return match[0].item
+
+        fuzzymatch = fuse.search(data);
+        return (fuzzymatch[0].item);
       }
-      return project;
-    }
 
-    case 'epoch': {
-      const latestEpoch = await blockfrostAPI.epochsLatest();
-      const epoch = {
-        current: latestEpoch.epoch,
-        end: latestEpoch.end_time
+      case 'epoch': {
+        const latestEpoch = await blockfrostAPI.epochsLatest();
+        const epoch = {
+          current: latestEpoch.epoch,
+          end: latestEpoch.end_time
+        }
+        return epoch;
       }
-      return epoch;
-    }
 
-    case 'local': {
-      response = fs.readFileSync(data, 'utf8');
-      const fileData = JSON.parse(response);
-      return fileData;
-    }
+      case 'local': {
+        response = fs.readFileSync(data, 'utf8');
+        const fileData = JSON.parse(response);
+        return fileData;
+      }
 
-    default:
-      return console.error('Error with download!');
+      default:
+        console.error('ERROR: download');
+        return 'error';
+    }
+  } catch(error) {
+    console.error(`${error}\nPayload: ${data}`)
+    return 'error';
   }
 }
 
-module.exports.createMsg = async function (payload) {
+async function createMsg (payload) {
   const author = {
     name: 'Mula Bot - Degens Den Servant',
     iconURL: config.botIcon
@@ -264,21 +229,48 @@ module.exports.createMsg = async function (payload) {
   return newMessage;
 }
 
-module.exports.shortcutCheck = function (project) {
+async function jpgStoreCacheRefresh() {
+  let jpgPolicyData = [];
+        
+  for (let num = 1; ; num++) {
+    let jpgPage = `${api.jpgPolicy}${num}`;
+    let jpgData = await axios.get(jpgPage);
+  
+    if (jpgData.data.length > 0) jpgPolicyData = [...jpgPolicyData, ...jpgData.data];
+    else break;
+  }
+  await keyv.set('jpgstorecache', jpgPolicyData, 3600000);
+}
+
+function shortcutCheck (project) {
   if (project in SHORTCUTS) return SHORTCUTS[project];
   else return project;
 }
 
-module.exports.crewCheck = function (homie) {
+function crewCheck (homie) {
   if (homie in CREW) return true;
 }
 
-module.exports.choose = function (choices) {
+function choose (choices) {
   var index = Math.floor(Math.random() * choices.length);
   return choices[index];
 }
 
 const DEF_DELAY = 1000;
-module.exports.sleep = function (ms) {
+function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms || DEF_DELAY));
+}
+
+module.exports = {
+  CREW,
+  SHORTCUTS,
+  SHORTCUTS_ETH,
+  ERROR_SAYINGS,
+  download,
+  createMsg,
+  jpgStoreCacheRefresh,
+  shortcutCheck,
+  crewCheck,
+  choose,
+  sleep
 }

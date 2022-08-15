@@ -1,8 +1,5 @@
-/* eslint-disable no-unused-vars */
-const fs = require('node:fs');
 const mulaFN = require('../mula_functions');
 const config = require('../config/config');
-const secrets = require('../config/secrets');
 const cron = require('node-cron');
 const Keyv = require('keyv');
 const keyv = new Keyv('redis://localhost:6379/0');
@@ -17,6 +14,7 @@ module.exports = {
     console.log("Mula Bot Starting ...");
 
     // Reaction Roles
+    // eslint-disable-next-line no-unused-vars
     async function updateReactRoles() {
       let channelData = await client.channels.cache.find(channelList => channelList.id === '941434790861754439')
       let editMsg = await channelData.messages.fetch('1004974668912009327');
@@ -69,6 +67,7 @@ module.exports = {
       { messageId: reactMsg, reaction: "📘", roleId: "1005330874516123649" },
     ]
 
+    // eslint-disable-next-line no-unused-vars
     const reactionRoles = new ReactionRole(client, rrConfig);
 
     // * Epoch Countdown *
@@ -91,10 +90,7 @@ module.exports = {
       if (Number(nowCompare) > Number(epochCompare)) {
         let epochNew = await mulaFN.download('null', 'epoch');
         // Sometimes Blockfrost takes a bit to update.
-        if (epoch.current === epochNew.current) {
-          console.log('same- done.')
-          return;
-        }
+        if (epoch.current === epochNew.current) return;
         await keyv.set('epoch', epochNew);
         const annoucement = client.channels.cache.get(config.annoucementChannel);
         await annoucement.send(`@everyone

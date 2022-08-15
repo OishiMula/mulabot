@@ -15,6 +15,7 @@
     "@keyv/redis": "^2.3.9",
     "@mtblc/image-collage": "github:mtblc/image-collage",
     "animated_gif": "^1.0.2",
+    "axios": "^0.27.2",
     "common-tags": "^1.8.2",
     "cron": "^2.1.0",
     "dayjs": "^1.11.4",
@@ -30,6 +31,7 @@
     "ordinal": "^1.0.3",
     "pino": "^7.0.0-rc.9",
     "select-random-file": "^1.2.1",
+    "sharp": "^0.30.7",
     "tenorjs": "^1.0.8",
     "uuid": "^8.3.2"
   },

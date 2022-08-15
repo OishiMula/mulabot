@@ -20,17 +20,10 @@ const twitterReacts = [
 // Gif Trigger Words
 const randomGifs = [
   'jimmy',
-  'degen',
-  'cardano',
-  'crypto',
-  'bear',
-  'bull',
   'linguini',
   'rip',
   'ginger',
-  'gingers',
   'pasta',
-  'solana',
   'shillington',
   'ups',
   'here we go',
