@@ -8,8 +8,6 @@ pm2 start index.js --name mulabot --log-date-format "MM/DD hh:mm:ssa"
 // Add required libs
 const fs = require('node:fs');
 const path = require('path');
-const mulaFN = require('./mula_functions');
-const config = require('./config/config')
 const secrets = require('./config/secrets')
 
 // Create Discord client Instance
@@ -25,6 +23,7 @@ const client = new Client({
 	],
 	partials: [Partials.Message, Partials.Reaction]
 });
+module.exports = client;
 
 // To load commands
 client.commands = new Collection();
@@ -47,46 +46,5 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
-
-// Check command and start process
-client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand()) return;
-
-	const command = client.commands.get(interaction.commandName);
-	if (!command) return;
-
-	// Start a timer to see how long the command takes
-	const t0 = performance.now();
-
-	// Quickhack for Flex
-	if (interaction.commandName === 'flex') {
-		await command.execute(interaction);
-		const t1 = performance.now();
-		console.log(`Command: ${interaction.commandName} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`)
-		return;
-	}
-
-	// If it's a command that needs to be sent quietly, else do a regular command
-	if (config.ephemeralCommands.includes(interaction.commandName)) {
-		await interaction.deferReply({
-			interaction,
-			ephemeral: true
-		});
-	} else await interaction.deferReply();
-
-	// Start the command, userInput is the end result for the try block - either pass or fail
-	let userInput = await command.execute(interaction);
-
-	try {
-		if (userInput[0] === undefined) userInput = 'n/a';
-		if (userInput[0] === 'error') throw new Error();
-		const t1 = performance.now();
-		console.log(`Command: ${interaction.commandName} - ${userInput} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`)
-	} catch (error) {
-		const t1 = performance.now();
-		await interaction.editReply(`I couldn't find ${userInput[1]} -- ${mulaFN.choose(mulaFN.ERROR_SAYINGS)}`);
-		console.error(`ERROR: ${interaction.commandName} - ${userInput[1]} -- ${interaction.user.tag} | Time: ${(t1 - t0).toFixed(5)}ms`);
-	}
-});
 
 client.login(secrets.botToken);

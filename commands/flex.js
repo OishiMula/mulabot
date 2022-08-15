@@ -13,6 +13,7 @@ keyv.on('error', err => console.error('ERROR: Keyv connection error:', err));
 
 
 
+
 const blockfrostAPI = new Blockfrost.BlockFrostAPI({
   projectId: secrets.blockfrostToken
 });
@@ -79,11 +80,12 @@ module.exports = {
         );
 
       await flexInteraction.reply({
-        content: `I have your wallet on file, do you want to flex yours or another wallet? || OTHER IS DOWN NOW, SRY`, 
+        content: `I have your wallet on file, do you want to flex yours or another wallet? || Ignore "Interaction failed"`, 
         components: [checkWalletRow],
         ephemeral: true
       });
-      
+
+
       const walletFilter = i => {
         i.deferUpdate();
         return i.user.id === interaction.user.id;
@@ -93,6 +95,7 @@ module.exports = {
 
       if (walletChoice.customId === 'mine') {
         stakeAddress = await userIdKeyv.get(interaction.user.id);
+        address = stakeAddress;
         flexInteraction.editReply({
           content: `Getting your wallet: ${stakeAddress}`,
           components: []
@@ -104,10 +107,15 @@ module.exports = {
           content: `Let's get that wallet.`,
           components: []
         })
+
+        const modalFilter = i => i.customId === "userAddress";
+        flexInteraction = await interaction.awaitModalSubmit({ modalFilter, time: 60000 });
+        address = flexInteraction.fields.getTextInputValue('userAddress').trim();
+
       }
-      
     }
-    if (!stakeAddress) {
+
+    if (!address) {
       const modal = new ModalBuilder()
         .setCustomId('flextitle')
         .setTitle('Mula Bot Flex Time');
@@ -124,25 +132,36 @@ module.exports = {
       const modalFilter = i => i.customId === "userAddress";
       flexInteraction = await interaction.awaitModalSubmit({ modalFilter, time: 60000 })
       address = flexInteraction.fields.getTextInputValue('userAddress').trim();
+    }
       
       // Check to see if $handle
       if (address.charAt(0) === '$') address = await getAddressFromHandle(address.slice(1));
 
-      try {
-        stakeAddress = (await blockfrostAPI.addresses(address)).stake_address;
-      } catch (error) {
-        await flexInteraction.reply({
-          content: `Sorry! I couldn't find anything for the address: ${address}`,
-          ephemeral: true
-        });
-        return "error";
+      if (!stakeAddress) {
+        try {
+          stakeAddress = (await blockfrostAPI.addresses(address)).stake_address;
+        } catch (error) {
+          await flexInteraction.reply({
+            content: `Sorry! I couldn't find anything for the address: ${address}`,
+            ephemeral: true
+          });
+          return "error";
+        }
       }
       
-      await flexInteraction.deferReply({
-        content: `Thanks for that, please wait while I'm checking what you have.`, 
-        ephemeral: true
-      });
-    }
+      try {
+        await flexInteraction.reply({
+          content: `Thanks for that, please wait while I'm checking what you have.`, 
+          ephemeral: true
+        });
+      } catch(error) {
+      {
+        await flexInteraction.editReply({
+          content: `Thanks for that, please wait while I'm checking what you have.`, 
+          ephemeral: true
+          });
+         }
+      }
 
 
     // Retrieve all assets
