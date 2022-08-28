@@ -23,7 +23,6 @@ const client = new Client({
 	],
 	partials: [Partials.Message, Partials.Reaction]
 });
-module.exports = client;
 
 // To load commands
 client.commands = new Collection();

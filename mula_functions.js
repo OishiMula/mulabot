@@ -1,18 +1,15 @@
 const fs = require('fs');
 const { EmbedBuilder } = require('discord.js');
-const Blockfrost = require('@blockfrost/blockfrost-js');
 const Fuse = require('fuse.js');
 const secrets = require('./config/secrets');
 const api = require('./config/api');
 const config = require('./config/config');
+const { mulaRDB, shortsDB } = require(`./db`);
 const axios = require('axios').default;
-const Keyv = require('keyv');
-const keyv = new Keyv('redis://localhost:6379/0');
-keyv.on('error', err => console.error('ERROR: Keyv connection error:', err));
-
-const blockfrostAPI = new Blockfrost.BlockFrostAPI({
-  projectId: secrets.blockfrostToken
-});
+const axiosRetry = require('axios-retry');
+axiosRetry(axios, { retries: 3 });
+const Blockfrost = require('@blockfrost/blockfrost-js');
+const blockfrostAPI = new Blockfrost.BlockFrostAPI({ projectId: secrets.blockfrostToken });
 
 const CREW = {
   "oishi": ["Secretly Satoshi", "Dirty $MILK whore", "I can't tell you, he's my boss", "Charles asks him for CNFT recommendations"],
@@ -39,39 +36,6 @@ const CREW = {
   "sirshill": ["this mfer can actually keep plxce calm", "GOLD GANG RTC FLOOR..in q3", "if your package is late from UPS blame his ass", "1227 BTC"],
   "bedo": ["don't underestimate - he's a whale", "photoshop guru - dude he's the artist we need", "probably chills with Charles on a ranch irl", "unv25 whale - enough said"],
   "datass": ["yea i got a nice donk, mwahs", "you wanna take a look?"]
-}
-
-const SHORTCUTS = {
-  "arc": "apeing riot club",
-  "bad fox": "badfoxmotorcycleclub-foxcollection",
-  "bc": "beyond citizens",
-  "bcrc": "bosscatrocketclub",
-  "carda": "cardastationland",
-  "ck": "chilledkongs",
-  "clay": "clay nation",
-  "clumsy": "clumsyghosts",
-  "cornbubble": "cornucopias-bubblejett-sprinter2022",
-  "cornjave": "cornucopiasgtijavelin2022",
-  "cwar": "cardano warriors",
-  "dcc": "degencryptoclub",
-  "drrs": "deadrabbitresurrectionsociety",
-  "drapes": "derpapes",
-  "gcclays": "clay nation x good charlotte",
-  "havoc": "havocworlds",
-  "hoppers": "happy hoppers club",
-  "htc": "happytigersclub",
-  "hw": "havoc worlds",
-  "knfty": "knftyworldknftycreatures",
-  "mmb": "meltingmoonboy",
-  "mdcc": "maddogcarclub",
-  "mek": "mekanism",
-  "pxlz": "deadpxlz",
-  "sac": "spaceapeclub",
-  "soho": "soho kids",
-  "unsigs": "unsigned_algorithms",
-  "vox kongs": "boss planet vox kongs",
-  "tangz": "wild tangz",
-  "yetis": "smooth yeti mountain club",
 }
 
 const SHORTCUTS_ETH = {
@@ -137,8 +101,8 @@ async function download (data, type) {
         let match, fuzzymatch, fuse, exactFuse;
         
         // retrieve jpgStore cache
-        if (!await keyv.get('jpgstorecache')) await jpgStoreCacheRefresh();
-        const jpgStoreCache = await keyv.get('jpgstorecache');
+        if (!await mulaRDB.get('jpgstorecache')) await jpgStoreCacheRefresh();
+        const jpgStoreCache = await mulaRDB.get('jpgstorecache');
 
         // set up fuzzy searches for typos
         fuse = new Fuse(jpgStoreCache, options);
@@ -239,11 +203,12 @@ async function jpgStoreCacheRefresh() {
     if (jpgData.data.length > 0) jpgPolicyData = [...jpgPolicyData, ...jpgData.data];
     else break;
   }
-  await keyv.set('jpgstorecache', jpgPolicyData, 3600000);
+  await mulaRDB.set('jpgstorecache', jpgPolicyData, 3600000);
 }
 
-function shortcutCheck (project) {
-  if (project in SHORTCUTS) return SHORTCUTS[project];
+async function shortcutCheck(project) {
+  const shortcutExist = await shortsDB.findOne({where: { short: project }, raw: true });
+  if (shortcutExist) return shortcutExist.full;
   else return project;
 }
 
@@ -263,7 +228,6 @@ function sleep (ms) {
 
 module.exports = {
   CREW,
-  SHORTCUTS,
   SHORTCUTS_ETH,
   ERROR_SAYINGS,
   download,

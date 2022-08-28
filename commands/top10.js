@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 const mulaFN = require('../mula_functions');
 const api = require('../config/api');
 const ordinal = require('ordinal')

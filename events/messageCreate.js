@@ -3,6 +3,7 @@ const config = require('../config/config');
 const secrets = require('../config/secrets')
 const randomFile = require('select-random-file');
 
+// eslint-disable-next-line no-unused-vars
 const Tenor = require("tenorjs").client({
   "Key": `${secrets.tenorToken}`, 
   "Filter": "off", 
@@ -28,12 +29,12 @@ module.exports = {
     }
     */
 
-    // Linguini_ Kong Fud Filter
+    // Filter somoene
     /*
-    if (message.author.id === '932913898473013268' && (messageContent.includes('kong') || messageContent.includes('kongs') || messageContent.includes('ongs') || messageContent.includes('ngs'))) {
+    if (message.author.id === '639648169663266839' && (messageContent.includes('oishi') || messageContent.includes('oish'))) {
       message.delete();
-      message.channel.send('no no no - bad boy.');
-      console.log(`Command: Delete Linguini_ Fud`)
+      message.channel.send('Be good bitch.');
+      console.log(`Command: Delete Banch Fud`)
     }
     */
 
@@ -43,7 +44,8 @@ module.exports = {
     if (messageContent.includes('https://twitter.com') || messageContent.includes('https://www.twitter.com')) {
       if (message.author.id === config.twitterAltUserId) message.client.channels.cache.get(config.twitterAltChannel).send(`${config.newTweet} ${message.author.username}\n${message.content}`);
       else message.client.channels.cache.get(config.twitterChannel).send(`${config.newTweet} ${message.author.username}\n${message.content}`);
-      config.twitterReacts.forEach(reaction => message.react(reaction)); 
+      config.twitterReacts.forEach(reaction => message.react(reaction));
+      return; 
     }
 
     // Plxce Beats
@@ -62,6 +64,7 @@ module.exports = {
       });
     }
 
+
     // Random gifs
     if (messageContent.split(" ").some(match => config.randomGifs.includes(match))) {
       const splitMessage = messageContent.split(" ");
@@ -71,7 +74,8 @@ module.exports = {
         // Quick fixes for certain terms
         switch (matchMessage[searchQuery]) {
           case 'ginger':
-            matchMessage[searchQuery] = 'rip';
+          case 'rip':
+            matchMessage[searchQuery] = 'rip funny';
             break;
           case 'ups':
           case 'shillington':
@@ -92,7 +96,7 @@ module.exports = {
       }
       console.log(`Command: ${matchMessage.toString()} -- ${message.author.tag}`)
     }
-
+   
 
     // Sheesh
     if (messageContent.split(" ").includes('sheesh')) {
@@ -153,121 +157,18 @@ module.exports = {
       });
     }
 
-    /* REMOVE SOON:
-    // Jimmy 
-    if (message.content.toLowerCase().split(" ").includes('jimmy')) {
-      console.log(`Command: Jimmy -- ${message.author.tag}`)
-      const jimmyDir = `${extrasPath}/jimmy`
-      randomFile(jimmyDir, (Err, jimmyGif) => {
+    // Oishi
+    if (message.content.toLowerCase().split(" ").includes('oishi') || message.content.toLowerCase().split(" ").includes('usagi')) {
+      console.log(`Command: Oishi -- ${message.author.tag}`)
+      const oishiDir = `${extrasPath}/ss`
+      randomFile(oishiDir, (Err, oishiGif) => {
         message.channel.send({
           files: [{
-            attachment: `${jimmyDir}/${jimmyGif}`,
-            name: `JIMMY.gif`
+            attachment: `${oishiDir}/${oishiGif}`,
+            name: `OISHIusagi.png`
           }]
         });
       });
     }
-
-    // Degen 
-    if (message.content.toLowerCase().split(" ").includes('degen')) {
-      console.log(`Command: Degen -- ${message.author.tag}`)
-      const degenDir = `${extrasPath}/degen`
-      randomFile(degenDir, (Err, degenGif) => {
-        message.channel.send({
-          files: [{
-            attachment: `${degenDir}/${degenGif}`,
-            name: `degenbois.gif`
-          }]
-        });
-      });
-    }
-
-    // Cardano
-    if (message.content.toLowerCase().split(" ").includes('cardano')) {
-      console.log(`Command: Cardano -- ${message.author.tag}`)
-      const cardanoDir = `${extrasPath}/cardano`
-      randomFile(cardanoDir, (Err, cardanoGif) => {
-        message.channel.send({
-          files: [{
-            attachment: `${cardanoDir}/${cardanoGif}`,
-            name: `believeInCardano.gif`
-          }]
-        });
-      });
-    }
-
-    // Crypto / Bear
-    if (message.content.toLowerCase().split(" ").includes('bear') || message.content.toLowerCase().split(" ").includes('crypto')) {
-      console.log(`Command: Crypto/Bear -- ${message.author.tag}`)
-      const cryptoDir = `${extrasPath}/crypto`
-      randomFile(cryptoDir, (Err, cryptoGif) => {
-        message.channel.send({
-          files: [{
-            attachment: `${cryptoDir}/${cryptoGif}`,
-            name: `WAGMIIII.gif`
-          }]
-        });
-      });
-    }
-
-    // RIP
-    if (message.content.toLowerCase().split(" ").includes('rip') ||
-      message.content.toLowerCase().split(" ").includes('gingers') ||
-      message.content.toLowerCase().split(" ").includes('ginger')) {
-      console.log(`Command: Rip/Gingers -- ${message.author.tag}`)
-      const ripDir = `${extrasPath}/rip`
-      randomFile(ripDir, (Err, ripGif) => {
-        message.channel.send({
-          files: [{
-            attachment: `${ripDir}/${ripGif}`,
-            name: `ripMfer.gif`
-          }]
-        });
-      });
-    }
-
-    // Solana Summer
-    if (message.content.toLowerCase().split(" ").includes('solana')) {
-      console.log(`Command: Solana -- ${message.author.tag}`)
-      const solanaDir = `${extrasPath}/solana`
-      randomFile(solanaDir, (Err, solanaGif) => {
-        message.channel.send({
-          files: [{
-            attachment: `${solanaDir}/${solanaGif}`,
-            name: `EWWsolanaWTF.gif`
-          }]
-        });
-      });
-    }
-
-    // Shillington
-    if (message.content.toLowerCase().split(" ").includes('shillington') || message.content.toLowerCase().split(" ").includes('ups')) {
-      console.log(`Command: Shillington/UPS -- ${message.author.tag}`)
-      const upsDir = `${extrasPath}/ups`
-      randomFile(upsDir, (Err, upsGif) => {
-        message.channel.send({
-          files: [{
-            attachment: `${upsDir}/${upsGif}`,
-            name: `UPSManShillington.gif`
-          }]
-        });
-      });
-    }
-
-    // here we go
-    if (message.content.toLowerCase().includes("here we go")) {
-      console.log(`Command: Here we go -- ${message.author.tag}`)
-      const herewegoDir = `${extrasPath}/herewego`
-      randomFile(herewegoDir, (Err, herewegoGif) => {
-        message.channel.send({
-          files: [{
-            attachment: `${herewegoDir}/${herewegoGif}`,
-            name: `hereweGO.gif`
-          }]
-        });
-      });
-    }
-
-  */
   }
 }

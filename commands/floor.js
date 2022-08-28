@@ -1,5 +1,5 @@
-const {	SlashCommandBuilder } = require('@discordjs/builders');
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { hypeMultipler } = require('../config/config');
 const mulaFN = require('../mula_functions');
 const api = require('../config/api');
 
@@ -19,7 +19,7 @@ module.exports = {
 			return "Done";
 		}
 
-		projectName = mulaFN.shortcutCheck(projectName);
+		projectName = await mulaFN.shortcutCheck(projectName);
 
 		const project = await mulaFN.download(projectName, 'project');
 		if (project === "error") return ['error', projectName];
@@ -40,35 +40,41 @@ module.exports = {
 			thumbnail: `${api.ipfsBase}${imgURL}`
 		}
 
-		if (floorPrice < 5) {
-			// Hype button 
+		if (floorPrice < 30) {
 			row = new ActionRowBuilder()
 				.addComponents(
 					new ButtonBuilder()
 						.setCustomId('hype')
-						.setLabel('hype me up')
+						.setLabel('HYPE')
 						.setStyle(ButtonStyle.Primary),
 			);
-			
-			interaction.client.on('clickButton', async (button) => {
-				if (button.id === 'hype') 
-					button.reply.send('test');
-	})
-
 		}
 
 		const embed = await mulaFN.createMsg(msgPayload);
+		await interaction.editReply({
+			embeds: [embed], 
+			components: ((row === undefined) ? [] : [row])
+		});
 		
-		if (row) {
-			await interaction.editReply({
-				embeds: [embed],
-				components: [row],
-			});
-		}
-		else {
-			await interaction.editReply({
-				embeds: [embed]
-			});
+		if (row !== undefined) {
+			let hypeFlag = 1;
+			const hypeActivate = await interaction.channel.awaitMessageComponent({  componentType: ComponentType.Button, time: 5000 })
+			.catch( () => { hypeFlag = 0; });
+			if (hypeFlag === 0) {
+				await interaction.editReply({ components: [] });
+			}
+			else {
+				if (hypeActivate.customId === 'hype') {
+					const hypeFloorPrice = hypeMultipler === 1 ? 'WAIT- NO HYPE! Your shit is at ₳8 rugpull status.' : String((jpgFloorJ.floor / 1000000) * hypeMultipler);
+					msgPayload.content = `Floor price: **₳${hypeFloorPrice}**
+					[jpg.store link](${api.jpgStore}${project.url})`,
+					msgPayload.title = "HYPED floor";
+					msgPayload.source = "me";
+					const hypeEmbed = await mulaFN.createMsg(msgPayload);
+					await interaction.editReply({ embeds: [hypeEmbed], components: [] });
+					return `hyped ${project.display_name}`;
+				}
+			}
 		}
 
 		return project.display_name;

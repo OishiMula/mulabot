@@ -1,17 +1,19 @@
 const mulaFN = require('../mula_functions');
 const config = require('../config/config');
 const cron = require('node-cron');
-const Keyv = require('keyv');
-const keyv = new Keyv('redis://localhost:6379/0');
-keyv.on('error', err => console.error('ERROR: Keyv connection error:', err));
 const { ReactionRole } = require("discordjs-reaction-role");
 const commontags = require('common-tags');
+const chalk = require('chalk');
+const { guildsDB, configsDB, mulaRDB, shortsDB } = require('../db');
 
 module.exports = {
   name: 'ready',
   once: true,
   async execute(client) {
-    console.log("Mula Bot Starting ...");
+    console.log(chalk.cyan("Mula Bot Starting ..."));
+    guildsDB.sync();
+    configsDB.sync();
+    shortsDB.sync();
 
     // Reaction Roles
     // eslint-disable-next-line no-unused-vars
@@ -19,7 +21,7 @@ module.exports = {
       let channelData = await client.channels.cache.find(channelList => channelList.id === '941434790861754439')
       let editMsg = await channelData.messages.fetch('1004974668912009327');
       // cant retrieve the object to use as normal
-      //let editMsg = await keyv.get('rolesmsg');
+      //let editMsg = await mulaRDB.get('rolesmsg');
 
       let emojiRoles = ['🌞', '🐇', '⚔️', '🐱', '🦉', '👻', '🍪', '🦩', '🦆', '📘'];
       const newMsg = commontags.stripIndents `Holder Roles - React to Add/Remove
@@ -45,7 +47,7 @@ module.exports = {
       for (let emoji in emojiRoles) editMsg.react(emojiRoles[emoji]);
       console.log('INFO: Reaction Roles: Update Complete')
 
-      await keyv.set('rolesmsg', editMsg);
+      await mulaRDB.set('rolesmsg', editMsg);
     }
 
     // Turn on the following line to update Reaction Roles
@@ -72,15 +74,15 @@ module.exports = {
 
     // * Epoch Countdown *
     // Check to see if epoch data exist
-    if (!await keyv.get('epoch')) {
+    if (!await mulaRDB.get('epoch')) {
       console.error("No Epoch data found - Downloading.");
-      await keyv.set('epoch', await mulaFN.download('null', 'epoch'));
-      console.log(await keyv.get('epoch'));
+      await mulaRDB.set('epoch', await mulaFN.download('null', 'epoch'));
+      console.log(await mulaRDB.get('epoch'));
     }
 
     // Scheduled task to check epoch - Main Logic
     cron.schedule('* */30 * * * *', async () => {
-      let epoch = await keyv.get('epoch');
+      let epoch = await mulaRDB.get('epoch');
       let now = new Date().getTime();
 
       // To even out numbers for comparison, date compare didn't work
@@ -91,12 +93,13 @@ module.exports = {
         let epochNew = await mulaFN.download('null', 'epoch');
         // Sometimes Blockfrost takes a bit to update.
         if (epoch.current === epochNew.current) return;
-        await keyv.set('epoch', epochNew);
+        await mulaRDB.set('epoch', epochNew);
         const annoucement = client.channels.cache.get(config.annoucementChannel);
         await annoucement.send(`@everyone
 <a:sirenred:944494985288515644> **A NEW EPOCH HAS BEGUN!** <a:sirenred:944494985288515644>
 We are now on **Epoch ${epochNew.current}** 
 Don't forget your Dripdropz at https://dripdropz.io/`);
+        console.log(chalk.green(`info: ${chalk.yellow(new epoch)} - ${epochNew.current}`));
       }
     })
   }

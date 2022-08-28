@@ -27,6 +27,7 @@ const randomGifs = [
   'shillington',
   'ups',
   'here we go',
+  'feet'
 ]
 
 // Twitter prefix message
@@ -40,6 +41,8 @@ const ephemeralCommands = [
 // Bot Icon URL
 const botIcon = process.env.MULA_BOT_IMAGE;
 
+const hypeMultipler = Math.round(Math.random() * (15 - 1 + 1) + 1)
+
 module.exports = {
   ownerId,
   annoucementChannel,
@@ -51,4 +54,5 @@ module.exports = {
   newTweet,
   ephemeralCommands,
   botIcon,
+  hypeMultipler
 };

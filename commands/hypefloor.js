@@ -1,6 +1,7 @@
-const {	SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 const mulaFN = require('../mula_functions');
 const api = require('../config/api');
+const { hypeMultipler } = require('../config/config');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -21,7 +22,6 @@ module.exports = {
 
 		// Retrieve floor
 		const jpgFloorJ = await mulaFN.download(`${api.jpgCollection}${project.policy_id}/floor`, 'data');
-		const hypeMultipler = Math.round(Math.random() * (15 - 1 + 1) + 1)
 		let floorPrice;
 		floorPrice = hypeMultipler === 1 ? 'WAIT- NO HYPE! Your shit is at ₳8 rugpull status.' : String((jpgFloorJ.floor / 1000000) * hypeMultipler);
 

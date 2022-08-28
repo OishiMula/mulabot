@@ -1,4 +1,4 @@
-const {	SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 const ordinal = require('ordinal')
 const dayjs = require('dayjs')
 const relativeTime = require('dayjs/plugin/relativeTime')
@@ -11,21 +11,21 @@ module.exports = {
 		.setName('last')
 		.setDescription('Retrieve the last # sales made')
 		.addStringOption(option => option.setName('project').setDescription('Enter a project name').setRequired(true))
-		.addIntegerOption(option => option.setName('amount').setDescription('Retrieve the last # sales made').setMinValue(1).setMaxValue(10)),
+		.addIntegerOption(option => option.setName('amount').setDescription('Retrieve the last # sales made').setMinValue(1).setMaxValue(20)),
 	async execute(interaction) {
 		let projectName = interaction.options.getString('project');
-
-		projectName = mulaFN.shortcutCheck(projectName);
+		projectName = await mulaFN.shortcutCheck(projectName);
 
 		let amount = interaction.options.getInteger('amount');
 		amount > 0 ? {} : amount = 5;
 
-		// Retrieve proeject name <--> PolicyID match
+		// Retrieve project name <--> PolicyID match
 		const project = await mulaFN.download(projectName, 'project')
 		if (project === "error") return ['error', projectName];
 
 		// Get CNFT Project Image
 		const imgURL = await mulaFN.download(`${api.opencnftPolicy}${project.policy_id}`, 'thumbnail');
+
 
 		// Retrieve recent sales
 		const jpgSalesJ = await mulaFN.download(`${api.jpgProject}${project.policy_id}/sales?page=1`, 'data');
