@@ -11,7 +11,7 @@ module.exports = {
 	async execute(interaction) {
 		let projectName = interaction.options.getString('project').toLowerCase();
 
-		projectName = mulaFN.shortcutCheck(projectName);
+		projectName = await mulaFN.shortcutCheck(projectName);
 
 		// Retrieve proeject name <--> PolicyID match
 		const project = await mulaFN.download(projectName, 'project');

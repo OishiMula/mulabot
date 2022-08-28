@@ -141,55 +141,38 @@ async function download (data, type) {
   }
 }
 
-async function createMsg (payload) {
-  const author = {
-    name: 'Mula Bot - Degens Den Servant',
-    iconURL: config.botIcon
-  }
+async function createMsg (payload, messages) {
+  const author = { name: 'Mula Bot - Degens Den Servant', iconURL: config.botIcon }
 
   let footer;
   switch (payload.source) {
     case 'jpg': {
-      footer = {
-        text: 'Data provided by jpg.store'
-      };
+      footer = { text: 'Data provided by jpg.store' };
       break;
     }
     case 'opencnft': {
-      footer = {
-        text: 'Data provided by opencnft.io'
-      };
+      footer = { text: 'Data provided by opencnft.io' };
       break;
     }
     case 'opensea': {
-      footer = {
-        text: 'Data provided by opensea.io'
-      };
-      break;
-    }
-    case 'museliswap': {
-      footer = {
-        text: 'Data provided by museliswap.com'
-      };
+      footer = { text: 'Data provided by opensea.io' };
       break;
     }
     default:
-      footer = {
-        text: 'Data provided by ME'
-      };
+      footer = { text: 'Data provided by ME' };
       break;
   }
 
   const color = '#F70000'
-
   const newMessage = new EmbedBuilder()
     .setTitle(payload.title)
     .setThumbnail(payload.thumbnail)
     .setColor(color)
     .setAuthor(author)
     .setFooter(footer)
-    .addFields({ name: payload.header, value: payload.content });
 
+  if (messages) for (let num in messages) newMessage.addFields(messages[num]);
+  else newMessage.addFields({ name: payload.header, value: payload.content });
   return newMessage;
 }
 
