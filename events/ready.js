@@ -1,19 +1,17 @@
-const mulaFN = require('../mula_functions');
-const config = require('../config/config');
+const { download } = require('../mula_functions');
+const { annoucementChannel } = require('../config/config');
 const cron = require('node-cron');
 const { ReactionRole } = require("discordjs-reaction-role");
-const commontags = require('common-tags');
+const ct = require('common-tags');
 const chalk = require('chalk');
-const { guildsDB, configsDB, mulaRDB, shortsDB } = require('../db');
+const { sequelize, mulaRDB } = require('../db');
 
 module.exports = {
   name: 'ready',
   once: true,
   async execute(client) {
     console.log(chalk.cyan("Mula Bot Starting ..."));
-    guildsDB.sync();
-    configsDB.sync();
-    shortsDB.sync();
+    sequelize.sync();
 
     // Reaction Roles
     // eslint-disable-next-line no-unused-vars
@@ -24,7 +22,7 @@ module.exports = {
       //let editMsg = await mulaRDB.get('rolesmsg');
 
       let emojiRoles = ['🌞', '🐇', '⚔️', '🐱', '🦉', '👻', '🍪', '🦩', '🦆', '📘'];
-      const newMsg = commontags.stripIndents `Holder Roles - React to Add/Remove
+      const newMsg = ct.stripIndents `Holder Roles - React to Add/Remove
         Melting Moonboy - 🌞 
         DRRS - 🐇 
         Tavern Squad - ⚔️ 
@@ -35,9 +33,8 @@ module.exports = {
         The JRney - 🦩
         The Mallard Order - 🦆
         Introverts - 📘`;
-
       editMsg.edit(newMsg);
-
+      
       /* Following lines Create a new message */
       //const roleChannel = client.channels.cache.get('941434790861754439');
       //const reactMsg = await roleChannel.send(newMsg);
@@ -45,7 +42,7 @@ module.exports = {
 
       /* Following lines update an existing message */
       for (let emoji in emojiRoles) editMsg.react(emojiRoles[emoji]);
-      console.log('INFO: Reaction Roles: Update Complete')
+      console.log('info: Reaction Roles: Update Complete')
 
       await mulaRDB.set('rolesmsg', editMsg);
     }
@@ -55,7 +52,6 @@ module.exports = {
 
     // Retrieve ReactionMessage
     let reactMsg = '1004974668912009327';
-    
     const rrConfig = [
       { messageId: reactMsg, reaction: "🌞", roleId: "986823055756111963" },
       { messageId: reactMsg, reaction: "🐇", roleId: "984073693770707025" },
@@ -76,7 +72,7 @@ module.exports = {
     // Check to see if epoch data exist
     if (!await mulaRDB.get('epoch')) {
       console.error("No Epoch data found - Downloading.");
-      await mulaRDB.set('epoch', await mulaFN.download('null', 'epoch'));
+      await mulaRDB.set('epoch', await download('null', 'epoch'));
       console.log(await mulaRDB.get('epoch'));
     }
 
@@ -90,15 +86,15 @@ module.exports = {
       let nowCompare = String(now).padEnd(15, '0');
 
       if (Number(nowCompare) > Number(epochCompare)) {
-        let epochNew = await mulaFN.download('null', 'epoch');
+        let epochNew = await download('null', 'epoch');
         // Sometimes Blockfrost takes a bit to update.
         if (epoch.current === epochNew.current) return;
         await mulaRDB.set('epoch', epochNew);
-        const annoucement = client.channels.cache.get(config.annoucementChannel);
-        await annoucement.send(`@everyone
-<a:sirenred:944494985288515644> **A NEW EPOCH HAS BEGUN!** <a:sirenred:944494985288515644>
-We are now on **Epoch ${epochNew.current}** 
-Don't forget your Dripdropz at https://dripdropz.io/`);
+        const annoucement = client.channels.cache.get(annoucementChannel);
+        await annoucement.send(ct.stripIndents`@everyone
+          <a:sirenred:944494985288515644> **A NEW EPOCH HAS BEGUN!** <a:sirenred:944494985288515644>
+          We are now on **Epoch ${epochNew.current}** 
+          Don't forget your [Dripdropz](https://dripdropz.io) or [TosiDrop](https://tosidrop.io/)`);
         console.log(chalk.green(`info: ${chalk.yellow(new epoch)} - ${epochNew.current}`));
       }
     })

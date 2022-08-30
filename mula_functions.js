@@ -55,7 +55,6 @@ const ERROR_SAYINGS = [
   "shit's lost like Linguini",
   "sry come again",
   "nope no dice",
-  "nah but in other news, Oishi is dope.",
   "NOPE.",
   "so sorry oh well",
   "and i don't care",
@@ -142,7 +141,7 @@ async function download (data, type) {
 }
 
 async function createMsg (payload, messages) {
-  const author = { name: 'Mula Bot - Degens Den Servant', iconURL: config.botIcon }
+  const author = { name: `Mula Bot - The Degen's Servant`, iconURL: config.botIcon }
 
   let footer;
   switch (payload.source) {
@@ -209,6 +208,14 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms || DEF_DELAY));
 }
 
+const Tenor = require("tenorjs").client({
+  "Key": `${secrets.tenorToken}`, 
+  "Filter": "off", 
+  "Locale": "en_US",
+  "MediaFilter": "gif",
+  "DateFormat": "MM/D/YYYY - H:mm:ss A"
+});
+
 module.exports = {
   CREW,
   SHORTCUTS_ETH,
@@ -219,5 +226,6 @@ module.exports = {
   shortcutCheck,
   crewCheck,
   choose,
-  sleep
+  sleep,
+  Tenor
 }

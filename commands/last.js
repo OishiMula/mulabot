@@ -43,7 +43,7 @@ module.exports = {
 			const purchased = dayjs(confirmed_at).fromNow();
 			messages.push({ 
 				name: `[${ordinal(Number(num) + 1)}] ${display_name}`,
-				value: `**₳${Number(price_lovelace / 1000000)}** :: [${purchased.substring(0, purchased.length-4)}](${jpgAsset}${asset_id})`,
+				value: `₳${Number(price_lovelace / 1000000)} :: [${purchased.substring(0, purchased.length-4)}](${jpgAsset}${asset_id})`,
 				inline: true
 			});
 		}

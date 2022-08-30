@@ -1,16 +1,10 @@
+const { twitterAltUserId, twitterAltChannel, newTweet, twitterChannel, twitterReacts } = require('../config/config');
+const { Tenor } = require('../mula_functions');
+const { configsDB, gifsDB } = require('../db');
+const chalk = require('chalk');
 const extrasPath = './extras/';
-const config = require('../config/config');
-const secrets = require('../config/secrets')
 const randomFile = require('select-random-file');
 
-// eslint-disable-next-line no-unused-vars
-const Tenor = require("tenorjs").client({
-  "Key": `${secrets.tenorToken}`, 
-  "Filter": "off", 
-  "Locale": "en_US",
-  "MediaFilter": "gif",
-  "DateFormat": "MM/D/YYYY - H:mm:ss A"
-});
 
 module.exports = {
   name: 'messageCreate',
@@ -42,9 +36,9 @@ module.exports = {
     // This will retrieve messages that include a tweet link, add fun reacts, and repost it in a separate channel
     // There is an option for secondary post to go to a specific channel (ie, admin posting tweets)
     if (messageContent.includes('https://twitter.com') || messageContent.includes('https://www.twitter.com')) {
-      if (message.author.id === config.twitterAltUserId) message.client.channels.cache.get(config.twitterAltChannel).send(`${config.newTweet} ${message.author.username}\n${message.content}`);
-      else message.client.channels.cache.get(config.twitterChannel).send(`${config.newTweet} ${message.author.username}\n${message.content}`);
-      config.twitterReacts.forEach(reaction => message.react(reaction));
+      if (message.author.id === twitterAltUserId) message.client.channels.cache.get(twitterAltChannel).send(`${newTweet} ${message.author.username}\n${message.content}`);
+      else message.client.channels.cache.get(twitterChannel).send(`${newTweet} ${message.author.username}\n${message.content}`);
+      twitterReacts.forEach(reaction => message.react(reaction));
       return; 
     }
 
@@ -66,36 +60,26 @@ module.exports = {
 
 
     // Random gifs
-    if (messageContent.split(" ").some(match => config.randomGifs.includes(match))) {
-      const splitMessage = messageContent.split(" ");
-      let matchMessage = splitMessage.filter(match => config.randomGifs.includes(match));
+    const gifToggle = await configsDB.findOne({ attributes: ['gifs'], where: { guildid: message.guildId }, raw: true });
+    if (gifToggle.gifs === 1) {
+      const gifs = await gifsDB.findAll({ attributes: ['giftrigger', 'gifsearch'], where: { gid: message.guildId }, raw: true });
+      const gifTriggers = gifs.map(g => g.giftrigger);
 
-      for (let searchQuery in matchMessage) {
-        // Quick fixes for certain terms
-        switch (matchMessage[searchQuery]) {
-          case 'ginger':
-          case 'rip':
-            matchMessage[searchQuery] = 'rip funny';
-            break;
-          case 'ups':
-          case 'shillington':
-            matchMessage[searchQuery] = 'ups delivery';
-            break;
-          case 'pasta':
-          case 'linguini':
-            matchMessage[searchQuery] = 'toby office';
-            break;
-          default:
-            break;
+      if (messageContent.split(" ").some(match => gifTriggers.includes(match))) {
+        const splitMessage = messageContent.split(" ");
+        const matchMessage = splitMessage.filter(match => gifTriggers.includes(match));
+
+        for (let match in matchMessage) {
+          const search = (gifs.find(g => g.giftrigger === matchMessage[match])).gifsearch;
+          Tenor.Search.Query(search, "50").then(results => {
+            const randomGif = results[Math.floor(Math.random() * results.length)];
+            message.channel.send(randomGif.url);
+          })
         }
-
-        Tenor.Search.Query(matchMessage[searchQuery], "50").then(results => {
-          const randomGif = results[Math.floor(Math.random() * results.length)];
-          message.channel.send(randomGif.url);
-        })
+        console.log(chalk.green(`gif: ${chalk.yellow(matchMessage.toString())} | ${message.author.tag}`));
       }
-      console.log(`Command: ${matchMessage.toString()} -- ${message.author.tag}`)
     }
+
    
 
     // Sheesh
@@ -170,5 +154,17 @@ module.exports = {
         });
       });
     }
+
+    // juan
+    if (messageContent.split(" ").includes('juan')) {
+      console.log(`Command: Juan -- ${message.author.tag}`)
+      message.channel.send({
+        files: [{
+          attachment: `${extrasPath}juan.gif`,
+          name: `juanbby.gif`
+        }]
+      });
+    }
+
   }
 }

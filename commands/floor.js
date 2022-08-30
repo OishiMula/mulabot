@@ -51,10 +51,7 @@ module.exports = {
 		}
 
 		const embed = await mulaFN.createMsg(msgPayload);
-		await interaction.editReply({
-			embeds: [embed], 
-			components: ((row === undefined) ? [] : [row])
-		});
+		await interaction.editReply({ embeds: [embed],  components: ((row === undefined) ? [] : [row]) });
 		
 		if (row !== undefined) {
 			let hypeFlag = 1;

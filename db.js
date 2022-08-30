@@ -1,38 +1,52 @@
-const Sequelize = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 const Keyv = require('keyv');
 
 const sequelize = new Sequelize('database', 'user', 'password', {
   host: 'localhost',
   dialect: 'sqlite',
   logging: false,
-  storage: 'muladb.sqlite'
+  storage: 'mula.db'
 });
 
 const guildsDB = sequelize.define('guilds', {
   guildid: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     primaryKey: true
   },
-  name: Sequelize.STRING,
-  ownerid: Sequelize.STRING
+  name: DataTypes.STRING,
+  ownerid: DataTypes.STRING,
 });
 
 const configsDB = sequelize.define('configs', {
   guildid: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     primaryKey: true
   },
-  gifsenabled: Sequelize.INTEGER,
-  epochchannel: Sequelize.STRING,
-  twitterchannel: Sequelize.STRING
+  guildname: DataTypes.STRING,
+  gifs: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  announcementchannel: DataTypes.STRING,
+  twitterchannel: DataTypes.STRING,
+  setup: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  }
 });
 
 const shortsDB = sequelize.define('shorts', {
   short: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     primaryKey: true
   },
-  full: Sequelize.STRING
+  full: DataTypes.STRING,
+});
+
+const gifsDB = sequelize.define('gifs', {
+  giftrigger: DataTypes.STRING,
+  gifsearch: DataTypes.STRING,
+  gid: DataTypes.STRING
 });
 
 const mulaRDB = new Keyv('redis://localhost:6379/0');
@@ -42,5 +56,6 @@ module.exports = {
   guildsDB,
   configsDB,
   shortsDB,
+  gifsDB,
   mulaRDB
 }

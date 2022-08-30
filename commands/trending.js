@@ -7,7 +7,7 @@ const { config } = require('dotenv');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('top10all')
+    .setName('trending')
     .setDescription('Retrieve the Top 10 projects today on OpenCNFT'),
   async execute(interaction) {
     const opencnftData = await mulaFN.download(api.opencnftTopDaily, 'data');
