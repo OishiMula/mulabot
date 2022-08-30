@@ -1,10 +1,9 @@
 const { download } = require('../mula_functions');
-const { annoucementChannel } = require('../config/config');
 const cron = require('node-cron');
 const { ReactionRole } = require("discordjs-reaction-role");
 const ct = require('common-tags');
 const chalk = require('chalk');
-const { sequelize, mulaRDB } = require('../db');
+const { sequelize, mulaRDB, configsDB } = require('../db');
 
 module.exports = {
   name: 'ready',
@@ -90,11 +89,17 @@ module.exports = {
         // Sometimes Blockfrost takes a bit to update.
         if (epoch.current === epochNew.current) return;
         await mulaRDB.set('epoch', epochNew);
-        const annoucement = client.channels.cache.get(annoucementChannel);
-        await annoucement.send(ct.stripIndents`@everyone
+        const announcementChannels = await configsDB.findAll({ attributes: ['announcementchannel'], raw: true });
+    
+        for (let chan in announcementChannels) {
+          const { announcementchannel } = announcementChannels[chan];
+          const discordChannel = client.channels.cache.get(announcementchannel);
+          await discordChannel.send(ct.stripIndents`@everyone
           <a:sirenred:944494985288515644> **A NEW EPOCH HAS BEGUN!** <a:sirenred:944494985288515644>
           We are now on **Epoch ${epochNew.current}** 
           Don't forget your [Dripdropz](https://dripdropz.io) or [TosiDrop](https://tosidrop.io/)`);
+        }
+
         console.log(chalk.green(`info: ${chalk.yellow(new epoch)} - ${epochNew.current}`));
       }
     })

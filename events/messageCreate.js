@@ -1,4 +1,4 @@
-const { twitterAltUserId, twitterAltChannel, newTweet, twitterChannel, twitterReacts } = require('../config/config');
+const { twitterAltUserId, twitterAltChannel, newTweet, twitterReacts } = require('../config/config');
 const { Tenor } = require('../mula_functions');
 const { configsDB, gifsDB } = require('../db');
 const chalk = require('chalk');
@@ -36,8 +36,12 @@ module.exports = {
     // This will retrieve messages that include a tweet link, add fun reacts, and repost it in a separate channel
     // There is an option for secondary post to go to a specific channel (ie, admin posting tweets)
     if (messageContent.includes('https://twitter.com') || messageContent.includes('https://www.twitter.com')) {
-      if (message.author.id === twitterAltUserId) message.client.channels.cache.get(twitterAltChannel).send(`${newTweet} ${message.author.username}\n${message.content}`);
-      else message.client.channels.cache.get(twitterChannel).send(`${newTweet} ${message.author.username}\n${message.content}`);
+      const twitterChannels = await configsDB.findOne({ attributes: ['twitterchannel'], where: { guildid: message.guild.id }, raw: true });
+      const { twitterchannel } = twitterChannels;
+      const discordChannel = message.client.channels.cache.get(twitterchannel);
+      // TODO: fix this zeru line down the line
+      if (message.author.id === twitterAltUserId) message.client.channels.cache.get(twitterAltChannel).send(`${newTweet} ${message.author.username}\n${message.content}`); 
+      else discordChannel.send(`${newTweet} ${message.author.username}\n${message.content}`);
       twitterReacts.forEach(reaction => message.react(reaction));
       return; 
     }
