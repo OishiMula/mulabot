@@ -79,6 +79,7 @@ module.exports = {
             const randomGif = results[Math.floor(Math.random() * results.length)];
             message.channel.send(randomGif.url);
           })
+          if (match === '20') break;
         }
         console.log(chalk.green(`gif: ${chalk.yellow(matchMessage.toString())} | ${message.author.tag}`));
       }
@@ -146,6 +147,7 @@ module.exports = {
     }
 
     // Oishi
+    /*
     if (message.content.toLowerCase().split(" ").includes('oishi') || message.content.toLowerCase().split(" ").includes('usagi')) {
       console.log(`Command: Oishi -- ${message.author.tag}`)
       const oishiDir = `${extrasPath}/ss`
@@ -158,6 +160,7 @@ module.exports = {
         });
       });
     }
+    */
 
     // juan
     if (messageContent.split(" ").includes('juan')) {

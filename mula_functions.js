@@ -4,12 +4,14 @@ const Fuse = require('fuse.js');
 const secrets = require('./config/secrets');
 const api = require('./config/api');
 const config = require('./config/config');
-const { mulaRDB, shortsDB } = require(`./db`);
+const { mulaRDB, shortsDB, guildsDB } = require(`./db`);
 const axios = require('axios').default;
 const axiosRetry = require('axios-retry');
 axiosRetry(axios, { retries: 3 });
 const Blockfrost = require('@blockfrost/blockfrost-js');
 const blockfrostAPI = new Blockfrost.BlockFrostAPI({ projectId: secrets.blockfrostToken });
+const io = require('@pm2/io').init({ metrics: { eventLoop: false } });
+const interactionsCount = io.metric({ name: 'Interactions Executed', id: 'actions', unit: 'sent'});
 
 const CREW = {
   "oishi": ["Secretly Satoshi", "Dirty $MILK whore", "I can't tell you, he's my boss", "Charles asks him for CNFT recommendations"],
@@ -153,6 +155,10 @@ async function createMsg (payload, messages) {
       footer = { text: 'Data provided by opencnft.io' };
       break;
     }
+    case 'coingecko': {
+      footer = { text: 'Data provided by coingecko.com' };
+      break;
+    }
     case 'opensea': {
       footer = { text: 'Data provided by opensea.io' };
       break;
@@ -203,6 +209,13 @@ function choose (choices) {
   return choices[index];
 }
 
+async function incInteractions(interaction) {
+  await guildsDB.increment('interactions', { where: { guildid: interaction.guildId } });
+  const interactionsAmount = await guildsDB.findAll({ attributes: ['interactions'] , raw: true })
+  const totalInteractions = interactionsAmount.reduce((total, amount) => { return total + amount.interactions; }, 0);
+  interactionsCount.set(totalInteractions); 
+}
+
 const DEF_DELAY = 1000;
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms || DEF_DELAY));
@@ -226,6 +239,7 @@ module.exports = {
   shortcutCheck,
   crewCheck,
   choose,
+  incInteractions,
   sleep,
   Tenor
 }

@@ -15,6 +15,7 @@ const guildsDB = sequelize.define('guilds', {
   },
   name: DataTypes.STRING,
   ownerid: DataTypes.STRING,
+  interactions: DataTypes.INTEGER
 });
 
 const configsDB = sequelize.define('configs', {

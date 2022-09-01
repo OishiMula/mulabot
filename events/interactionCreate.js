@@ -1,6 +1,6 @@
 const chalk = require('chalk');
-const mulaFN = require('../mula_functions');
-const config = require('../config/config')
+const { choose, incInteractions, ERROR_SAYINGS } = require('../mula_functions');
+const { ephemeralCommands } = require('../config/config');
 
 module.exports = {
   name: 'interactionCreate',
@@ -14,7 +14,7 @@ module.exports = {
     const t0 = performance.now();
 
     // If it's a command that needs to be sent quietly, else do a regular command
-    if (config.ephemeralCommands.includes(interaction.commandName)) {
+    if (ephemeralCommands.includes(interaction.commandName)) {
       await interaction.deferReply({
         interaction,
         ephemeral: true
@@ -31,9 +31,10 @@ module.exports = {
       console.log(chalk.green(`command: ${chalk.yellow(interaction.commandName)} - ${chalk.yellow(userInput)}\nfrom: ${chalk.blue(interaction.user.tag)} | Time: ${chalk.blue((t1 - t0).toFixed(5))}ms`));
     } catch (error) {
       const t1 = performance.now();
-      await interaction.editReply(`I couldn't find ${userInput[1]} -- ${mulaFN.choose(mulaFN.ERROR_SAYINGS)}`);
+      await interaction.editReply(`I couldn't find ${userInput[1]} -- ${choose(ERROR_SAYINGS)}`);
       console.error(chalk.red(`error: ${chalk.magenta(interaction.commandName)} - ${chalk.magenta(userInput[1])}\nfrom: ${chalk.blue(interaction.user.tag)} | Time: ${chalk.blue((t1 - t0).toFixed(5))}ms`));
     }
-  }
 
+    await incInteractions(interaction);
   }
+}
