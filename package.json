@@ -1,6 +1,6 @@
 {
   "name": "mula_bot",
-  "version": "0.9.5",
+  "version": "0.9.7",
   "description": "Mula Bot - For Discord!",
   "main": "index.js",
   "scripts": {
