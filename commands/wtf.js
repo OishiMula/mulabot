@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { createMsg } = require('../mula_functions');
 const { botIcon } = require('../config/config');
-const { gifsDB } = require('../db');
+const { SQL } = require('../db');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,8 +9,9 @@ module.exports = {
     .setDescription('See commands available. Also, only you can see this. Won\'t spam chat. PROMISE.'),
 
   async execute(interaction) {
-    const allGifs = await gifsDB.findAll({ attributes: ['giftrigger'], where: { gid: interaction.guildId }, raw: true });
-    const gifList = allGifs.map(g => g.giftrigger);
+    const allGifs = await SQL('gifs').select('giftrigger')
+      .where({ gid: interaction.guildId });
+    const gifList = allGifs.map((g) => g.giftrigger);
     const msgPayload = {
       title: 'You need some help!',
       source: 'Mula Bot',
@@ -25,11 +26,11 @@ module.exports = {
       **/wtf** --> This command
       **Gif Trigger Words:**
       ${gifList}`,
-      thumbnail: `${botIcon}`
-    }
+      thumbnail: `${botIcon}`,
+    };
 
     const embed = await createMsg(msgPayload);
     await interaction.editReply({ embeds: [embed] });
     return 'Done';
-  }
-}
+  },
+};

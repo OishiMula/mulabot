@@ -13,7 +13,6 @@
     "@coingecko/cryptoformat": "^0.5.4",
     "@discordjs/rest": "^0.4.1",
     "@keyv/redis": "^2.3.9",
-    "@mtblc/image-collage": "github:mtblc/image-collage",
     "@pm2/io": "^5.0.0",
     "animated_gif": "^1.0.2",
     "axios": "^0.27.2",
@@ -30,22 +29,21 @@
     "dotenv": "^16.0.1",
     "fuse.js": "^6.6.2",
     "keyv": "^4.3.3",
+    "knex": "^2.3.0",
     "lodash": "^4.17.21",
     "millify": "^4.0.1",
     "node-cron": "^3.0.1",
     "ordinal": "^1.0.3",
-    "pino": "^7.0.0-rc.9",
     "select-random-file": "^1.2.1",
-    "sequelize": "^6.21.4",
     "sharp": "^0.30.7",
-    "sqlite3": "^5.0.11",
     "tenorjs": "^1.0.8",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "eslint": "^8.20.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.26.0"
+    "eslint-plugin-import": "^2.26.0",
+    "sqlite3": "^5.0.11"
   },
   "repository": {
     "type": "git",

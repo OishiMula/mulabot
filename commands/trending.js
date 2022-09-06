@@ -1,9 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
+const ordinal = require('ordinal');
+const { millify } = require('millify');
 const mulaFN = require('../mula_functions');
 const api = require('../config/api');
-const ordinal = require('ordinal');
-const { millify } = require("millify");
-const { config } = require('dotenv');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,29 +10,25 @@ module.exports = {
     .setDescription('Retrieve the Top 10 projects today on OpenCNFT'),
   async execute(interaction) {
     const opencnftData = await mulaFN.download(api.opencnftTopDaily, 'data');
-    const top10Today = await opencnftData['ranking'].slice(0, 10);
-
-    function saleMsg(sale) {
-      let msg = ''
-      for (let i = 0; i < sale.length; i += 1) {
-        msg += `**${ordinal(i + 1)}** ${sale[i].name} **||** ₳${millify(sale[i].volume)} **||** ₳${sale[i].floor_price} \n`
-      }
-      return msg;
-    }
+    const top10Today = await opencnftData.ranking.slice(0, 10);
 
     const msgPayload = {
-      title: 'Top 10 All',
+      title: 'Top 10 on the CNFT Markets Today!',
       source: 'opencnft',
-      header: "Project Name | 24Hr Volume | Floor Price",
-      content: saleMsg(top10Today),
-      thumbnail: config.botIcon
+    };
+
+    const messages = [];
+    for (const num of Object.keys(top10Today)) {
+      const { name, volume, floor_price } = top10Today[num];
+      messages.push({
+        name: `${ordinal(Number(num) + 1)} : ${name}`,
+        value: `vol :: **₳${millify(volume)}**\nfp : **₳${floor_price}**`,
+        inline: true,
+      });
     }
 
-    const embed = await mulaFN.createMsg(msgPayload);
-
-    await interaction.editReply({
-      embeds: [embed]
-    });
+    const embed = await mulaFN.createMsg(msgPayload, messages);
+    await interaction.editReply({ embeds: [embed] });
     return 'Done';
-  }
-}
+  },
+};

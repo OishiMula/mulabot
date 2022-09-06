@@ -8,5 +8,5 @@ module.exports = {
   async execute(interaction) {
     await interaction.editReply('Just be polite and life\'s good.');
     return 'Done';
-  }
-}
+  },
+};

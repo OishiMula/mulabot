@@ -1,177 +1,163 @@
-const { twitterAltUserId, twitterAltChannel, newTweet, twitterReacts } = require('../config/config');
-const { Tenor } = require('../mula_functions');
-const { configsDB, gifsDB } = require('../db');
 const chalk = require('chalk');
-const extrasPath = './extras/';
 const randomFile = require('select-random-file');
+const { Tenor, incInteractions } = require('../mula_functions');
+const {
+  twitterAltUserId, twitterAltChannel, newTweet, twitterReacts,
+} = require('../config/config');
+const { SQL } = require('../db');
 
+const extrasPath = './extras/';
+const coolDown = new Set();
+
+async function log(msg, meme) {
+  console.log(chalk.green(`meme: ${chalk.yellow(meme)} | ${msg.author.username}`));
+  incInteractions(msg);
+}
 
 module.exports = {
   name: 'messageCreate',
-  async execute(message) {  
+  async execute(message) {
     if (message.author.bot) return;
-  
-    let messageContent = message.content.toLowerCase();
 
-    // Linguini L take
-    /*
-    if (message.author.id === '932913898473013268') {
-      Tenor.Search.Query('L', "50").then(results => {
-        const randomGif = results[Math.floor(Math.random() * results.length)];
-        message.reply(randomGif.url);    
-      })
-    }
-    */
-
-    // Filter somoene
-    /*
-    if (message.author.id === '639648169663266839' && (messageContent.includes('oishi') || messageContent.includes('oish'))) {
-      message.delete();
-      message.channel.send('Be good bitch.');
-      console.log(`Command: Delete Banch Fud`)
-    }
-    */
+    const messageContent = message.content.toLowerCase();
 
     // Twitter Function
-    // This will retrieve messages that include a tweet link, add fun reacts, and repost it in a separate channel
-    // There is an option for secondary post to go to a specific channel (ie, admin posting tweets)
     if (messageContent.includes('https://twitter.com') || messageContent.includes('https://www.twitter.com')) {
-      const twitterChannels = await configsDB.findOne({ attributes: ['twitterchannel'], where: { guildid: message.guild.id }, raw: true });
+      const twitterChannels = await SQL('configs').select('twitterchannel')
+        .where({ guildid: message.guild.id }).first();
       const { twitterchannel } = twitterChannels;
       const discordChannel = message.client.channels.cache.get(twitterchannel);
       // TODO: fix this zeru line down the line
-      if (message.author.id === twitterAltUserId) message.client.channels.cache.get(twitterAltChannel).send(`${newTweet} ${message.author.username}\n${message.content}`); 
+      if (message.author.id === twitterAltUserId) message.client.channels.cache.get(twitterAltChannel).send(`${newTweet} ${message.author.username}\n${message.content}`);
       else discordChannel.send(`${newTweet} ${message.author.username}\n${message.content}`);
-      twitterReacts.forEach(reaction => message.react(reaction));
-      return; 
+      twitterReacts.forEach((reaction) => message.react(reaction));
+      console.log(chalk.green(`info: new tweet shared from: ${message.author.username}`));
+      incInteractions(message);
+      return;
     }
 
-    // Plxce Beats
-    if (messageContent === "drop the beat") {
-      console.log(`Command: Drop the beat -- ${message.author.tag}`)
-      message.channel.send({
-        files: [{
-            attachment: `${extrasPath}herewego.gif`,
-            name: `hereweGO.gif`
-          },
-          {
-            attachment: `${extrasPath}brunch_for_dinner.mp3`,
-            name: `brunch_for_dinner.mp3`
-          }
-        ]
-      });
-    }
-
-
-    // Random gifs
-    const gifToggle = await configsDB.findOne({ attributes: ['gifs'], where: { guildid: message.guildId }, raw: true });
+    const gifToggle = await SQL('configs').select('gifs')
+      .where({ guildid: message.guildId }).first();
     if (gifToggle.gifs === 1) {
-      const gifs = await gifsDB.findAll({ attributes: ['giftrigger', 'gifsearch'], where: { gid: message.guildId }, raw: true });
-      const gifTriggers = gifs.map(g => g.giftrigger);
+      const gifs = await SQL('gifs').select('giftrigger', 'gifsearch')
+        .where({ gid: message.guildId });
+      const gifTriggers = gifs.map((g) => g.giftrigger);
+      if (messageContent.split(' ').some((match) => gifTriggers.includes(match))) {
+        const splitMessage = messageContent.split(' ');
+        const matchMessage = splitMessage.filter((match) => gifTriggers.includes(match));
 
-      if (messageContent.split(" ").some(match => gifTriggers.includes(match))) {
-        const splitMessage = messageContent.split(" ");
-        const matchMessage = splitMessage.filter(match => gifTriggers.includes(match));
-
-        for (let match in matchMessage) {
-          const search = (gifs.find(g => g.giftrigger === matchMessage[match])).gifsearch;
-          Tenor.Search.Query(search, "50").then(results => {
+        for (const match of Object.keys(matchMessage)) {
+          const search = (gifs.find((g) => g.giftrigger === matchMessage[match])).gifsearch;
+          Tenor.Search.Query(search, '50').then((results) => {
             const randomGif = results[Math.floor(Math.random() * results.length)];
             message.channel.send(randomGif.url);
-          })
+          });
           if (match === '20') break;
         }
-        console.log(chalk.green(`gif: ${chalk.yellow(matchMessage.toString())} | ${message.author.tag}`));
+        log(message, 'random gifs');
       }
     }
 
-   
+    if (messageContent === 'drop the beat') {
+      log(message, 'drop the beat');
+      message.channel.send({
+        files: [{
+          attachment: `${extrasPath}herewego.gif`,
+          name: 'hereweGO.gif',
+        },
+        {
+          attachment: `${extrasPath}brunch_for_dinner.mp3`,
+          name: 'brunch_for_dinner.mp3',
+        }],
+      });
+    }
 
-    // Sheesh
-    if (messageContent.split(" ").includes('sheesh')) {
-      console.log(`Command: Sheesh -- ${message.author.tag}`)
+    if (messageContent.split(' ').includes('sheesh')) {
+      log(message, 'sheesh');
       message.channel.send({
         files: [{
           attachment: `${extrasPath}sheesh.mp3`,
-          name: `sheesh.mp3`
-        }]
+          name: 'sheesh.mp3',
+        }],
       });
     }
 
-    // bitconnect
-    if (messageContent.split(" ").includes('bitconnect')) {
-      console.log(`Command: Bitconnect -- ${message.author.tag}`)
+    if (messageContent.split(' ').includes('bitconnect')) {
+      log(message, 'bitconnect');
       message.channel.send({
-        content: "Did someone say.. bitconnect?",
+        content: 'Did someone say.. bitconnect?',
         files: [{
           attachment: `${extrasPath}bitconnnnnnnnect.mp3`,
-          name: `BITCONNNNNNNNNNNNNNNECT.mp3`
-        }]
+          name: 'BITCONNNNNNNNNNNNNNNECT.mp3',
+        }],
       });
     }
 
-    // real kong shit
     if (messageContent.includes('real kong shit') || messageContent.includes(':harambehorny:')) {
-      console.log(`Command: Real kong shit -- ${message.author.tag}`)
+      log(message, 'real kong shit');
       message.channel.send({
         files: [{
           attachment: `${extrasPath}realkongshit.mp4`,
-          name: `realkongshitbyplxce.mp4`
-        }]
+          name: 'realkongshitbyplxce.mp4',
+        }],
       });
     }
 
-    // Puta
-    if (messageContent.split(" ").includes('puta')) {
-      console.log(`Command: Puta -- ${message.author.tag}`)
+    if (messageContent.split(' ').includes('puta')) {
+      log(message, 'puta');
       message.channel.send({
         files: [{
           attachment: `${extrasPath}puta.gif`,
-          name: `malditaPUTAcono.gif`
-        }]
+          name: 'malditaPUTAcono.gif',
+        }],
       });
     }
 
-    // mini messi
-    if (messageContent.includes("mini messi") || messageContent.includes('messi')) {
-      console.log(`Command: Mini Messi -- ${message.author.tag}`)
-      const minimessiDir = `${extrasPath}/messi`
+    if (messageContent.includes('mini messi') || messageContent.includes('messi')) {
+      log(message, 'messi');
+      const minimessiDir = `${extrasPath}/messi`;
       randomFile(minimessiDir, (Err, minimessiGif) => {
         message.channel.send({
           files: [{
             attachment: `${minimessiDir}/${minimessiGif}`,
-            name: `minimessi.gif`
-          }]
+            name: 'minimessi.gif',
+          }],
         });
       });
     }
 
     // Oishi
-    /*
-    if (message.content.toLowerCase().split(" ").includes('oishi') || message.content.toLowerCase().split(" ").includes('usagi')) {
-      console.log(`Command: Oishi -- ${message.author.tag}`)
-      const oishiDir = `${extrasPath}/ss`
+    if (message.content.toLowerCase().split(' ').includes('oishi')
+      || message.content.toLowerCase().split(' ').includes('usagi')) {
+      if (coolDown.has(message.author.id)) return;
+      coolDown.add(message.author.id);
+      setTimeout(() => coolDown.delete(message.author.id), 30000);
+
+      log(message, 'oishi | usagi');
+      const oishiDir = `${extrasPath}/ss`;
       randomFile(oishiDir, (Err, oishiGif) => {
         message.channel.send({
           files: [{
             attachment: `${oishiDir}/${oishiGif}`,
-            name: `OISHIusagi.png`
-          }]
+            name: 'OISHIusagi.png',
+          }],
         });
       });
     }
-    */
 
     // juan
-    if (messageContent.split(" ").includes('juan')) {
-      console.log(`Command: Juan -- ${message.author.tag}`)
+    if (messageContent.split(' ').includes('juan')) {
+      if (coolDown.has(message.author.id)) return;
+      coolDown.add(message.author.id);
+      setTimeout(() => coolDown.delete(message.author.id), 30000);
+
+      log(message, 'juan');
       message.channel.send({
         files: [{
           attachment: `${extrasPath}juan.gif`,
-          name: `juanbby.gif`
-        }]
+          name: 'juanbby.gif',
+        }],
       });
     }
-
-  }
-}
+  },
+};

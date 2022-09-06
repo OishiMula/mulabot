@@ -3,7 +3,7 @@
 module.exports = {
   name: 'messageReactionAdd',
   async execute(reaction, user) {
-    if (reaction.message.id !== "1004974668912009327") return;
+    if (reaction.message.id !== '1004974668912009327') return;
 
     switch (reaction.emoji.name) {
       case '🌞':
@@ -36,6 +36,8 @@ module.exports = {
       case '📘':
         console.log(`Reaction Roles added: 📘 - ${user.tag}`);
         break;
+      default:
+        break;
     }
-  }
-}
+  },
+};

@@ -3,8 +3,8 @@
 module.exports = {
   name: 'messageReactionRemove',
   async execute(reaction, user) {
-    if (reaction.message.id !== "1004974668912009327") return;
-    
+    if (reaction.message.id !== '1004974668912009327') return;
+
     switch (reaction.emoji.name) {
       case '🌞':
         console.log(`Reaction Roles removed: 🌞 - ${user.tag}`);
@@ -36,6 +36,8 @@ module.exports = {
       case '📘':
         console.log(`Reaction Roles removed: 📘 - ${user.tag}`);
         break;
+      default:
+        break;
     }
-  }
-}
+  },
+};
