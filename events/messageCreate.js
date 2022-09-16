@@ -10,7 +10,7 @@ const extrasPath = './extras/';
 const coolDown = new Set();
 
 async function log(msg, meme) {
-  console.log(chalk.green(`meme: ${chalk.yellow(meme)} | ${msg.author.username}`));
+  console.log(chalk.green(`meme: ${chalk.yellow(meme)} from ${chalk.blue(msg.author.username)}`));
   incInteractions(msg);
 }
 
@@ -31,7 +31,7 @@ module.exports = {
       if (message.author.id === twitterAltUserId) message.client.channels.cache.get(twitterAltChannel).send(`${newTweet} ${message.author.username}\n${message.content}`);
       else discordChannel.send(`${newTweet} ${message.author.username}\n${message.content}`);
       twitterReacts.forEach((reaction) => message.react(reaction));
-      console.log(chalk.green(`info: new tweet shared from: ${message.author.username}`));
+      console.log(chalk.green(`info: ${chalk.yellow('new tweet shared')} from: ${chalk.blue(message.author.username)}`));
       incInteractions(message);
       return;
     }
@@ -126,7 +126,7 @@ module.exports = {
       });
     }
 
-    // Oishi
+/*     // Oishi
     if (message.content.toLowerCase().split(' ').includes('oishi')
       || message.content.toLowerCase().split(' ').includes('usagi')) {
       if (coolDown.has(message.author.id)) return;
@@ -144,7 +144,8 @@ module.exports = {
         });
       });
     }
-
+ */
+/* 
     // juan
     if (messageContent.split(' ').includes('juan')) {
       if (coolDown.has(message.author.id)) return;
@@ -159,5 +160,6 @@ module.exports = {
         }],
       });
     }
+ */
   },
 };

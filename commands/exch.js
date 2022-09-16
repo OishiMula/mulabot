@@ -21,6 +21,11 @@ async function createErr(coin, vsCoin = 'usd') {
     content: `**${errorCoin}** does not seem to be valid.`,
     source: 'coingecko',
   };
+  if (coin === 'invalid') {
+    msgPayload.header = 'Not a Number!';
+    content = `You didn't enter a number.`;
+    return createMsg(msgPayload);
+  }
   return createMsg(msgPayload);
 }
 
@@ -28,11 +33,18 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('exch')
     .setDescription('Convert Crypto to Crypto/Fiat')
-    .addIntegerOption((amount) => amount.setName('amount').setDescription('How much?').setRequired(true))
+    .addStringOption((amount) => amount.setName('amount').setDescription('How much?').setRequired(true))
     .addStringOption((coin) => coin.setName('coin').setDescription('What coin? [Default: Cardano]'))
     .addStringOption((vs) => vs.setName('vs').setDescription('Against what coin? [Default: USD]')),
   async execute(interaction) {
-    const amount = interaction.options.getInteger('amount');
+    let amount, coinData, coinVsUsd, vsCoinData, vsCoinVsUsd, msgPayload, embed;
+
+    try {
+      amount = parseFloat(interaction.options.getString('amount'));
+      if (isNaN(amount)) throw "Not a Number";
+    } catch (error) {
+      embed = await createErr('invalid'); await interaction.editReply({ embeds: [embed] }); return 'error';
+    }
     const coin = (interaction.options.getString('coin') ?? 'ada').toLowerCase();
     const vsCoin = (interaction.options.getString('vs') ?? '').toLowerCase();
 
@@ -46,7 +58,6 @@ module.exports = {
       await mulaCACHE.set('cgscoins', cgData, 604800000);
     }
 
-    let coinData, coinVsUsd, vsCoinData, vsCoinVsUsd, msgPayload, embed;
     let coinMatch = cgData.filter((coins) => coins.symbol === coin && (coins.name.split(' ').length) < 2);
     coinMatch = coinMatch[0];
 

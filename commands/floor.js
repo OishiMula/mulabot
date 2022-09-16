@@ -67,8 +67,8 @@ module.exports = {
       await interaction.channel.awaitMessageComponent({
         componentType: ComponentType.Button,
         time: 5000,
-      })
-        .catch(() => { hypeFlag = 0; });
+      }).catch(() => { hypeFlag = 0; });
+      
       if (hypeFlag === 0) {
         await interaction.editReply({ components: [] });
       } else {
