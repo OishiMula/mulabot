@@ -1,16 +1,21 @@
 const chalk = require('chalk');
 const randomFile = require('select-random-file');
-const { Tenor, incInteractions } = require('../mula_functions');
+const stripAnsi = require('strip-ansi');
+const {
+  Tenor, incInteractions, timeNow, logger,
+} = require('../mula_functions');
 const {
   twitterAltUserId, twitterAltChannel, newTweet, twitterReacts,
 } = require('../config/config');
 const { SQL } = require('../db');
 
 const extrasPath = './extras/';
-const coolDown = new Set();
+// const coolDown = new Set();
 
 async function log(msg, meme) {
-  console.log(chalk.green(`meme: ${chalk.yellow(meme)} from ${chalk.blue(msg.author.username)}`));
+  const logMessage = chalk.green(`meme: ${chalk.yellow(meme)} from ${chalk.blue(msg.author.username)}`);
+  console.log(timeNow() + logMessage);
+  logger.info(stripAnsi(logMessage));
   incInteractions(msg);
 }
 
@@ -31,7 +36,9 @@ module.exports = {
       if (message.author.id === twitterAltUserId) message.client.channels.cache.get(twitterAltChannel).send(`${newTweet} ${message.author.username}\n${message.content}`);
       else discordChannel.send(`${newTweet} ${message.author.username}\n${message.content}`);
       twitterReacts.forEach((reaction) => message.react(reaction));
-      console.log(chalk.green(`info: ${chalk.yellow('new tweet shared')} from: ${chalk.blue(message.author.username)}`));
+      const logMessage = chalk.green(`info: ${chalk.yellow('new tweet shared')} from: ${chalk.blue(message.author.username)}`);
+      console.log(timeNow() + logMessage);
+      logger.info(stripAnsi(logMessage));
       incInteractions(message);
       return;
     }
@@ -126,7 +133,7 @@ module.exports = {
       });
     }
 
-/*     // Oishi
+    /*     // Oishi
     if (message.content.toLowerCase().split(' ').includes('oishi')
       || message.content.toLowerCase().split(' ').includes('usagi')) {
       if (coolDown.has(message.author.id)) return;
@@ -145,7 +152,7 @@ module.exports = {
       });
     }
  */
-/* 
+    /*
     // juan
     if (messageContent.split(' ').includes('juan')) {
       if (coolDown.has(message.author.id)) return;

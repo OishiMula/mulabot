@@ -1,5 +1,8 @@
 const chalk = require('chalk');
-const { choose, incInteractions, ERROR_SAYINGS } = require('../mula_functions');
+const stripAnsi = require('strip-ansi');
+const {
+  choose, incInteractions, timeNow, logger, ERROR_SAYINGS,
+} = require('../mula_functions');
 const { ephemeralCommands } = require('../config/config');
 
 module.exports = {
@@ -35,11 +38,15 @@ module.exports = {
       if (userInput[0] === undefined) userInput = 'n/a';
       if (userInput[0] === 'error') throw new Error();
       const t1 = performance.now();
-      console.log(chalk.green(`cmd: ${chalk.yellow(interaction.commandName)} - ${chalk.yellow(userInput)}\nfrom: ${chalk.blue(interaction.user.username)} - time: ${chalk.blue((t1 - t0).toFixed(5))}ms`));
+      const logMessage = chalk.green(`cmd: ${chalk.yellow(interaction.commandName)} - ${chalk.yellow(userInput)} id: ${chalk.blue(interaction.user.tag)} - time: ${chalk.blue((t1 - t0).toFixed(5))}ms`);
+      console.log(timeNow() + logMessage);
+      logger.info(stripAnsi(logMessage));
     } catch (error) {
       const t1 = performance.now();
+      const logMessage = chalk.red(`ERROR: ${chalk.magenta(interaction.commandName)} - ${chalk.magenta(userInput[1])} id: ${chalk.blue(interaction.user.tag)} | time: ${chalk.blue((t1 - t0).toFixed(5))}ms`);
+      console.error(timeNow() + logMessage);
+      logger.error(error, stripAnsi(logMessage));
       await interaction.editReply(`I couldn't find ${userInput[1]} -- ${choose(ERROR_SAYINGS)}`);
-      console.error(chalk.red(`error: ${chalk.magenta(interaction.commandName)} - ${chalk.magenta(userInput[1])}\nfrom: ${chalk.blue(interaction.user.username)} | Time: ${chalk.blue((t1 - t0).toFixed(5))}ms`));
     }
 
     await incInteractions(interaction);

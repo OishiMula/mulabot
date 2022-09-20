@@ -1,43 +1,40 @@
-// For reaction roles
+const chalk = require('chalk');
+const stripAnsi = require('strip-ansi');
+const nodeEmoji = require('node-emoji');
+const { timeNow, logger } = require('../mula_functions');
 
 module.exports = {
   name: 'messageReactionAdd',
   async execute(reaction, user) {
     if (reaction.message.id !== '1004974668912009327') return;
 
+    let emoji;
     switch (reaction.emoji.name) {
       case '🌞':
-        console.log(`Reaction Roles added: 🌞 - ${user.tag}`);
-        break;
+        emoji = '🌞'; break;
       case '🐇':
-        console.log(`Reaction Roles added: 🐇 - ${user.tag}`);
-        break;
+        emoji = '🐇'; break;
       case '⚔️':
-        console.log(`Reaction Roles added: ⚔️ - ${user.tag}`);
-        break;
+        emoji = '⚔️'; break;
       case '🐱':
-        console.log(`Reaction Roles added: 🐱 - ${user.tag}`);
-        break;
+        emoji = '🐱'; break;
       case '🦉':
-        console.log(`Reaction Roles added: 🦉 - ${user.tag}`);
-        break;
+        emoji = '🦉'; break;
       case '👻':
-        console.log(`Reaction Roles added: 👻 - ${user.tag}`);
-        break;
+        emoji = '👻'; break;
       case '🍪':
-        console.log(`Reaction Roles added: 🍪 - ${user.tag}`);
-        break;
+        emoji = '🍪'; break;
       case '🦩':
-        console.log(`Reaction Roles added: 🦩 - ${user.tag}`);
-        break;
+        emoji = '🦩'; break;
       case '🦆':
-        console.log(`Reaction Roles added: 🦆 - ${user.tag}`);
-        break;
+        emoji = '🦆'; break;
       case '📘':
-        console.log(`Reaction Roles added: 📘 - ${user.tag}`);
-        break;
-      default:
-        break;
+        emoji = '📘'; break;
+      default: break;
     }
+
+    const logMessage = chalk.green(`info: ${chalk.yellow('reaction role added:')} ${emoji} - id: ${user.tag}`);
+    console.log(timeNow() + logMessage);
+    logger.info(stripAnsi(nodeEmoji.unemojify(logMessage)));
   },
 };

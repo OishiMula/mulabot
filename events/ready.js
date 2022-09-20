@@ -2,14 +2,17 @@ const { ReactionRole } = require('discordjs-reaction-role');
 const cron = require('node-cron');
 const ct = require('common-tags');
 const chalk = require('chalk');
-const { download, incInteractions } = require('../mula_functions');
+const stripAnsi = require('strip-ansi');
+const {
+  download, incInteractions, timeNow, logger,
+} = require('../mula_functions');
 const { mulaCACHE, SQL } = require('../db');
 
 module.exports = {
   name: 'ready',
   once: true,
   async execute(client) {
-    console.log(chalk.cyan('Mula Bot Starting ...'));
+    console.log(timeNow() + chalk.cyan('Mula Bot Starting ...'));
     incInteractions(1);
 
     // Reaction Roles
@@ -70,7 +73,9 @@ module.exports = {
     // * Epoch Countdown *
     // Check to see if epoch data exist
     if (!await mulaCACHE.get('epoch')) {
-      console.error('No Epoch data found - Downloading.');
+      const logMessage = chalk.red('ERROR: no epoch data');
+      console.error(timeNow() + logMessage);
+      logger.error(stripAnsi(logMessage));
       await mulaCACHE.set('epoch', await download('null', 'epoch'));
       console.log(await mulaCACHE.get('epoch'));
     }
@@ -99,7 +104,9 @@ module.exports = {
           Don't forget your [Dripdropz](https://dripdropz.io) or [TosiDrop](https://tosidrop.io/)`);
         }
 
-        console.log(chalk.green(`info: ${chalk.yellow('new epoch')} - ${epochNew.current}`));
+        const logMessage = chalk.green(`${chalk.yellow('new epoch')} - ${epochNew.current}`);
+        console.error(timeNow() + logMessage);
+        logger.error(stripAnsi(logMessage));
       }
     });
   },

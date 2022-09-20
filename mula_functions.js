@@ -5,6 +5,9 @@ const axios = require('axios').default;
 const axiosRetry = require('axios-retry');
 const Blockfrost = require('@blockfrost/blockfrost-js');
 const io = require('@pm2/io').init();
+const chalk = require('chalk');
+const pino = require('pino');
+const dayjs = require('dayjs');
 const { mulaCACHE, SQL } = require('./db');
 const config = require('./config/config');
 const api = require('./config/api');
@@ -17,6 +20,20 @@ const Tenor = require('tenorjs').client({
   Locale: 'en_US',
   MediaFilter: 'gif',
   DateFormat: 'MM/D/YYYY - H:mm:ss A',
+});
+
+function timeNow() {
+  return `${chalk.white(dayjs().format('MM/DD HH:mm:ss'))} `;
+}
+
+const logger = pino({
+  transport: {
+    target: 'pino-pretty',
+    options: {
+      destination: '/home/nevets/logs/mulabot.log',
+      translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
+    },
+  },
 });
 
 const blockfrostAPI = new Blockfrost.BlockFrostAPI({ projectId: process.env.BLOCKFROST_TOKEN });
@@ -233,4 +250,6 @@ module.exports = {
   incInteractions,
   sleep,
   Tenor,
+  timeNow,
+  logger,
 };

@@ -68,7 +68,7 @@ module.exports = {
         componentType: ComponentType.Button,
         time: 5000,
       }).catch(() => { hypeFlag = 0; });
-      
+
       if (hypeFlag === 0) {
         await interaction.editReply({ components: [] });
       } else {

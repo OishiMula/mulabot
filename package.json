@@ -33,9 +33,13 @@
     "lodash": "^4.17.21",
     "millify": "^4.0.1",
     "node-cron": "^3.0.1",
+    "node-emoji": "^1.11.0",
     "ordinal": "^1.0.3",
+    "pino": "^8.6.0",
+    "pino-pretty": "^9.1.0",
     "select-random-file": "^1.2.1",
     "sharp": "^0.30.7",
+    "strip-ansi": "^6.0.1",
     "tenorjs": "^1.0.8",
     "uuid": "^8.3.2"
   },
