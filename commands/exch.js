@@ -23,7 +23,7 @@ async function createErr(coin, vsCoin = 'usd') {
   };
   if (coin === 'invalid') {
     msgPayload.header = 'Not a Number!';
-    content = `You didn't enter a number.`;
+    msgPayload.content = 'You didn\'t enter a number.';
     return createMsg(msgPayload);
   }
   return createMsg(msgPayload);
@@ -41,7 +41,8 @@ module.exports = {
 
     try {
       amount = parseFloat(interaction.options.getString('amount'));
-      if (isNaN(amount)) throw "Not a Number";
+      // eslint-disable-next-line no-throw-literal
+      if (amount.isNaN) throw 'Not a Number';
     } catch (error) {
       embed = await createErr('invalid'); await interaction.editReply({ embeds: [embed] }); return 'error';
     }

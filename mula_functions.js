@@ -188,6 +188,10 @@ async function createMsg(payload, messages) {
       footer = { text: 'Data provided by coingecko.com' };
       break;
     }
+    case 'minswap': {
+      footer = { text: 'Data provided by minswap.org' };
+      break;
+    }
     case 'opensea': {
       footer = { text: 'Data provided by opensea.io' };
       break;
@@ -205,6 +209,7 @@ async function createMsg(payload, messages) {
     .setAuthor(author)
     .setFooter(footer);
 
+  // eslint-disable-next-line no-restricted-syntax
   if (messages) for (const message of messages) newMessage.addFields(message);
   else newMessage.addFields({ name: payload.header, value: payload.content });
   return newMessage;

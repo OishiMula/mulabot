@@ -97,16 +97,19 @@ module.exports = {
         const announcementChannels = await SQL('configs').select('announcementchannel');
 
         for (const chan of announcementChannels) {
+          const dripUrl = 'https://dripdropz.io';
+          const tosiUrl = 'https://tosidrop.io/';
+
           const discordChannel = client.channels.cache.get(chan.announcementchannel);
           await discordChannel.send(ct.stripIndents`@everyone
           <a:sirenred:944494985288515644> **A NEW EPOCH HAS BEGUN!** <a:sirenred:944494985288515644>
-          We are now on **Epoch ${epochNew.current}** 
-          Don't forget your [Dripdropz](https://dripdropz.io) or [TosiDrop](https://tosidrop.io/)`);
+          We are now on **Epoch ${epochNew.current}**
+          Don't forget your ${dripUrl} or ${tosiUrl}`);
         }
 
-        const logMessage = chalk.green(`${chalk.yellow('new epoch')} - ${epochNew.current}`);
-        console.error(timeNow() + logMessage);
-        logger.error(stripAnsi(logMessage));
+        const logMessage = chalk.green(`info: ${chalk.yellow('new epoch')} - ${chalk.blue(epochNew.current)}`);
+        console.info(timeNow() + logMessage);
+        logger.info(stripAnsi(logMessage));
       }
     });
   },

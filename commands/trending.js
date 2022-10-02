@@ -18,6 +18,7 @@ module.exports = {
     };
 
     const messages = [];
+    // eslint-disable-next-line no-restricted-syntax
     for (const num of Object.keys(top10Today)) {
       const { name, volume, floor_price } = top10Today[num];
       messages.push({

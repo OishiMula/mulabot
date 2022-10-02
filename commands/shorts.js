@@ -5,6 +5,7 @@ const { SQL } = require('../db');
 
 function shortsMsg(shortcuts) {
   let msg = '';
+  // eslint-disable-next-line no-restricted-syntax
   for (const short of Object.keys(shortcuts)) msg += `**${shortcuts[short].short}** :: ${shortcuts[short].full}\n`;
   return msg;
 }

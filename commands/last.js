@@ -29,8 +29,8 @@ module.exports = {
     const imgURL = await download(`${opencnftPolicy}${project.policy_id}`, 'thumbnail');
 
     // Retrieve recent sales
-    const jpgSalesJ = await download(`${jpgProject}${project.policy_id}/sales?page=1`, 'data');
-    const jpgSalesData = jpgSalesJ.slice(0, amount);
+    const jpgSalesData = await download(`${jpgProject}${project.policy_id}/sales?page=1`, 'data');
+    // const jpgSalesData = jpgSalesJ.slice(0, amount);
 
     const msgPayload = {
       title: `Last ${amount} ${project.display_name} Sales`,
@@ -40,16 +40,20 @@ module.exports = {
     };
 
     const messages = [];
+    let successfulListings = 0;
     for (const num of Object.keys(jpgSalesData)) {
+      if (successfulListings === amount) break;
       const {
         display_name, price_lovelace, confirmed_at, asset_id,
       } = jpgSalesData[num];
       const purchased = dayjs(confirmed_at).fromNow();
+      if (purchased === 'NaN years ago') continue; // purchased = 'n/a time ago';
       messages.push({
-        name: `[${ordinal(Number(num) + 1)}] ${display_name}`,
+        name: `[${ordinal(Number(successfulListings) + 1)}] ${display_name}`,
         value: `₳${Number(price_lovelace / 1000000)} :: [${purchased.substring(0, purchased.length - 4)}](${jpgAsset}${asset_id})`,
         inline: true,
       });
+      successfulListings++;
     }
 
     const embed = await createMsg(msgPayload, messages);

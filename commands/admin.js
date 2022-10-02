@@ -254,6 +254,7 @@ module.exports = {
                   .setPlaceholder('Gif terms currently on the server'),
               );
 
+            // eslint-disable-next-line no-restricted-syntax
             for (const gif of Object.keys(gifList)) {
               const { giftrigger, gifsearch } = gifList[gif];
               gifsRow.components[0].addOptions({

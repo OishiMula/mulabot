@@ -36,7 +36,7 @@ const ephemeralCommands = [
 // Bot Icon URL
 const botIcon = process.env.MULA_BOT_IMAGE;
 
-const hypeMultipler = Math.round(Math.random() * (15 - 1 + 1) + 1);
+const hypeMultipler = Math.round(Math.random() * (100 - 1 + 1) + 1);
 
 module.exports = {
   twitterAltChannel,

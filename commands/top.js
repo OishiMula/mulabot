@@ -30,6 +30,7 @@ module.exports = {
     };
 
     const messages = [];
+    // eslint-disable-next-line no-restricted-syntax
     for (const num of Object.keys(projectATHSales)) {
       const {
         unit_name, price, unit, sold_at,

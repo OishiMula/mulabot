@@ -17,8 +17,10 @@ module.exports = {
       source: 'Mula Bot',
       header: 'Commands available',
       content: `**/floor *<projectname>*** --> Retrieve floor
+      **/tf *<name> <trait>*** --> Trait floor, find the cheapest priced trait.
       **/last *<name> <1-20>*** --> Retrieve last <1-20> of transactions
       **/top *<name>*** --> Retrieve top ten sales of project
+      **/toke *<token>*** --> Retrieve stats for your favorite token
       **/trending** --> Retrieve top ten projects today
       **/hypefloor** --> When you need a pick me up
       **/shorts** --> Shows your shortcuts available for projects / tokens
