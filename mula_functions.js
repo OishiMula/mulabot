@@ -94,6 +94,7 @@ async function jpgStoreCacheRefresh() {
     else break;
   }
   await mulaCACHE.set('jpgstorecache', jpgPolicyData, 3600000);
+  return jpgPolicyData;
 }
 
 async function download(data, type) {
@@ -130,7 +131,6 @@ async function download(data, type) {
           includeScore: true,
         };
 
-        // retrieve jpgStore cache
         if (!await mulaCACHE.get('jpgstorecache')) await jpgStoreCacheRefresh();
         const jpgStoreCache = await mulaCACHE.get('jpgstorecache');
 

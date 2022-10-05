@@ -1,7 +1,6 @@
-/* eslint-disable */
 const { SlashCommandBuilder } = require('discord.js');
 const { download, shortcutCheck, createMsg } = require('../mula_functions');
-const { opencnftPolicy, jpgProject, jpgStore } = require('../config/api');
+const { jpgProject } = require('../config/api');
 const { pgSQL } = require('../db');
 
 module.exports = {
@@ -12,30 +11,58 @@ module.exports = {
     .addStringOption((option) => option.setName('trait').setDescription('Enter the trait').setRequired(true)),
 
   async execute(interaction) {
-    let projectName = interaction.options.getString('project').toLowerCase();
-    let trait = interaction.options.getString('trait').toLowerCase();
-    let match = 0;
-
-    projectName = await shortcutCheck(projectName);
-    const project = await download(projectName, 'project');
-    if (project === 'error') {
-      const notFound = ['error', projectName]; 
-      return notFound;
-    }
-    
-    const traitsData = await download(`${opencnftPolicy}${project.policy_id}/asset/trait`, 'data');
-    for (const t in traitsData.traits) {
-      for (const v in traitsData.traits[t].trait_values) {
-        if (traitsData.traits[t].trait_values[v].value.toLowerCase() === trait) {
-          trait = traitsData.traits[t].trait_values[v].value;
-          match = 1;
-          break;
+    let trait, projectName, project;
+    /*  This function searches metadata
+        with recursion, allowing for
+        deeply nested objects.      */
+    function findMatch(val) {
+      if (typeof (val) === 'string') {
+        if (val.toLowerCase() === trait) {
+          return 1;
+        }
+      } else if (typeof (val) === 'object') {
+        const metadataValues = Object.values(val);
+        for (const subVal of metadataValues) {
+          const match = findMatch(subVal);
+          if (match === 1) return 1;
+        }
+      } else if (Array.isArray(val)) {
+        for (const subVal of val) {
+          const match = findMatch(subVal);
+          if (match === 1) return 1;
         }
       }
-      if (match === 1) break;
+      return 0;
     }
-    if (match === 0) {
-      const notFound = ['error', `${projectName} -  ${trait}`];
+
+    // Once a match is found, format the message for Discord
+    async function traitFound(listing, metadata) {
+      let metaImage = metadata.image;
+      const httpPattern = /^(https?|ftp)/;
+      if (!httpPattern.test(metaImage)) {
+        metaImage = metaImage.slice(7);
+        metaImage = `https://oishimula.infura-ipfs.io/ipfs/${metaImage}`;
+      }
+
+      const msgPayload = {
+        title: `Trait Floor: ${trait}`,
+        source: 'jpg',
+        header: project.display_name,
+        content: `Floor price: **₳${listing.price_lovelace / 1000000}**
+        Asset: [${listing.display_name}](https://www.jpg.store/asset/${listing.asset_id})`,
+        thumbnail: metaImage,
+      };
+      const embed = await createMsg(msgPayload);
+      await interaction.editReply({ embeds: [embed] });
+    }
+
+    projectName = interaction.options.getString('project').toLowerCase();
+    trait = interaction.options.getString('trait').toLowerCase();
+
+    projectName = await shortcutCheck(projectName);
+    project = await download(projectName, 'project');
+    if (project === 'error') {
+      const notFound = ['error', projectName];
       return notFound;
     }
 
@@ -50,7 +77,7 @@ module.exports = {
     }
     const sortedListings = listings.sort((a, b) => a.price_lovelace - b.price_lovelace);
     const results = await pgSQL.raw(`
-    SELECT json-> ? as metadata
+    SELECT ENCODE(ma.name, 'escape') as asset_name, json->?->ENCODE(ma.name, 'escape') as metadata
     FROM multi_asset ma
     INNER JOIN ma_tx_mint mtm ON ma.id = mtm.ident
     INNER JOIN tx t ON  mtm.tx_id = t.id
@@ -58,36 +85,33 @@ module.exports = {
     WHERE ma.policy = DECODE(?, 'hex')
     `, [project.policy_id, project.policy_id]);
     const allAssets = {};
-    results.rows.forEach((a, b) => {
-      Object.assign(allAssets, a.metadata);
+    results.rows.forEach((a) => {
+      let asset;
+      try {
+        a.metadata.assetname = a.asset_name;
+        asset = {
+          [a.metadata.name]: a.metadata,
+        };
+        Object.assign(allAssets, asset);
+      } catch (error) {
+        // return;
+      }
     });
+
     for (const listing of sortedListings) {
-      const assetName = listing.display_name.replace(/[^a-zA-Z0-9]/g, '')
+      const assetName = listing.display_name;
       const metadata = allAssets[assetName];
       for (const v in metadata) {
-        if (metadata[v] === trait) {
-          let metaImage = metadata.image;
-          const httpPattern = /^(https?|ftp)/;
-          if (!httpPattern.test(metaImage)) {
-            metaImage = metaImage.slice(7);
-            metaImage = `https://oishimula.infura-ipfs.io/ipfs/${metaImage}`;
+        if (Object.prototype.hasOwnProperty.call(metadata, v)) {
+          const matchFound = findMatch(metadata[v]);
+          if (matchFound === 1) {
+            await traitFound(listing, metadata);
+            return 'Done';
           }
-
-          const msgPayload = {
-            title: `Trait Floor: ${trait}`,
-            source: 'jpg',
-            header: project.display_name,
-            content: `Floor price: **₳${listing.price_lovelace / 1000000}**
-            Asset: [${listing.display_name}](https://www.jpg.store/asset/${listing.asset_id})`,
-            thumbnail: metaImage,
-          };  
-          const embed = await createMsg(msgPayload);
-          await interaction.editReply({ embeds: [embed] });
-          return 'Done';
         }
       }
     }
-    const notFound = ['error', projectName];
+    const notFound = ['error', `project: ${projectName} trait: ${trait}`];
     return notFound;
   },
 };
